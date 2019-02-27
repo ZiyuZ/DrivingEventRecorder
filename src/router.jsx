@@ -4,6 +4,7 @@ import App from "./App";
 import Home from "./pages/home";
 import VideoBasedRecorder from "./pages/videoBasedRecorder";
 import RealTimeRecorder from "./pages/realTimeRecorder";
+import Events from './pages/events';
 
 export default class router extends Component {
   render() {
@@ -23,6 +24,10 @@ export default class router extends Component {
                   <Route
                     path="/recorder/real_time"
                     component={RealTimeRecorder}
+                  />
+                  <Route
+                    path="/recorder/events"
+                    component={Events}
                   />
                 </Switch>
               );

@@ -56,17 +56,28 @@ export default class EventRecorder extends Component {
 
     this.setState({ buttonLoading: true });
     const eventString =
-      event.eventId + "-" + event.eventRecorder.map(e => e.value).join("");
-    console.log(time, eventString);
-    Axios.ajax({ //TODO: 后端接收不到餐宿
+      event.eventId +
+      "-" +
+      event.eventRecorder
+        .map(e =>
+          e.type === "check"
+            ? e.value === null
+              ? ""
+              : e.value.join("")
+            : e.value
+        )
+        .join("");
+
+    console.log(eventString);
+    Axios.ajax({
       url: backendConfig.eventApi,
       method: "POST",
       data: { time, event: eventString }
     }).then(
-      response => {
+      () => {
         this.setState({ buttonLoading: false });
       },
-      response => {
+      () => {
         this.setState({ buttonLoading: false });
       }
     );
@@ -84,6 +95,10 @@ export default class EventRecorder extends Component {
   };
 
   handleEventChange = eventId => {
+    if (eventId === undefined) {
+      this.setState({ event: { eventId: "-1", eventRecorder: [] } });
+      return;
+    }
     const eventOptions = this.state.eventsDefinition[eventId - 1].option;
     const eventRecorder = eventOptions.map(option => {
       return {
@@ -104,11 +119,12 @@ export default class EventRecorder extends Component {
           accordion
           className="events-wrap"
           onChange={this.handleEventChange}
+          destroyInactivePanel
         >
           {this.state.eventsDefinition.map(event => {
             const { id, description, option } = event;
             return (
-              <Collapse.Panel header={description} key={id}>
+              <Collapse.Panel header={id + ". " + description} key={id}>
                 {this.renderOption(option)}
               </Collapse.Panel>
             );
@@ -169,11 +185,18 @@ export default class EventRecorder extends Component {
           </Checkbox.Group>
         );
       } else if (groupType === "text") {
-        //TODO: Text
-        return <Input
-          key={groupId} placeholder="60-80"/>
+        //TODO: Text submission
+        return content.map(content => {
+          return (
+            <Input
+              key={content.code}
+              placeholder={content.description}
+              className="input"
+            />
+          );
+        });
       }
-      console.log(opt)
+      console.log(opt);
       return <span>Unkonwn option</span>;
     });
   };
@@ -185,6 +208,7 @@ export default class EventRecorder extends Component {
           type="primary"
           onClick={this.handleSubmit}
           loading={this.state.buttonLoading}
+          className="submit-button"
         >
           {this.state.buttonLoading ? "提交中..." : "提交"}
         </Button>

@@ -17,5 +17,11 @@ export default [
     pageTitle: "实时事件记录",
     pageUrl: "/recorder/real_time",
     icon: "pie-chart"
+  },
+  {
+    id: 3,
+    pageTitle: "事件列表",
+    pageUrl: "/recorder/events",
+    icon: "pie-chart"
   }
 ];
