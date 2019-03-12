@@ -16,7 +16,7 @@ var (
 func init() {
 	C = ReadConf()
 	E = initEcho()
-	DB = initDB()
+	DB = connectDB()
 }
 
 func main() {

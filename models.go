@@ -40,7 +40,7 @@ type (
 	}
 )
 
-func initDB() *sqlx.DB {
+func connectDB() *sqlx.DB {
 	db, err := sqlx.Open("sqlite3", C.DatabasePath)
 	if err != nil {
 		E.Logger.Fatal(err)
