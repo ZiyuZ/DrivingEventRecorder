@@ -1,0 +1,23 @@
+# build file & binfile
+*.exe
+*.dll
+*.def
+build/
+dist/
+
+#test file
+test*
+
+# data
+*.db
+
+# log file
+*.log
+
+# IDE config
+.idea/
+.vscode/
+
+# golang dependences
+*.sum
+vendor/
