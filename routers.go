@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"net/http"
 	"os"
 )
 
 func initEcho() *echo.Echo {
 	e := echo.New()
+	e.HideBanner = true
 
 	// logger middleware
 	if C.Log {
@@ -37,9 +37,11 @@ func initEcho() *echo.Echo {
 	e.File("/", C.PublicPath)
 
 	// api router
-	e.GET("/api/ping", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, Response{Code: 0, Message: "pong", Data: nil})
-	})
+	api := e.Group("/api")
+	{
+		api.GET("/ping", ping)
+	}
 
+	fmt.Println("Router initialized.")
 	return e
 }
