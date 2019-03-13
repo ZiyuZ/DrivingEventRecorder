@@ -3,6 +3,7 @@ package main
 import (
 	//"encoding/json"
 	"fmt"
+	"github.com/jmoiron/sqlx"
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/ini.v1"
 	"os"
@@ -83,7 +84,7 @@ func readConf() *config {
 		Log:        logFlag,
 		LogPath: cfg.Section("server").Key("log_path").Validate(func(in string) string {
 			if !logFlag {
-				return ""
+				return "unavailable"
 			}
 			f, err := os.OpenFile(in, os.O_CREATE, 0666)
 			if err != nil {
@@ -115,6 +116,18 @@ func readConf() *config {
 	}
 	table.Render()
 	return c
+}
+
+func connectDB() *sqlx.DB {
+	db, err := sqlx.Open("sqlite3", C.DatabasePath)
+	if err != nil {
+		E.Logger.Fatal(err)
+	}
+	if err := db.Ping(); err != nil {
+		E.Logger.Fatal(err)
+	}
+	fmt.Println("Database connected.")
+	return db
 }
 
 func callBrowser(ifCallBrowser bool) {

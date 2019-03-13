@@ -1,10 +1,5 @@
 package main
 
-import (
-	"fmt"
-	"github.com/jmoiron/sqlx"
-)
-
 type (
 	// Recorded event struct in driving behavior experiment
 	Event struct {
@@ -33,15 +28,3 @@ type (
 		EventOptions []EventOption
 	}
 )
-
-func connectDB() *sqlx.DB {
-	db, err := sqlx.Open("sqlite3", C.DatabasePath)
-	if err != nil {
-		E.Logger.Fatal(err)
-	}
-	if err := db.Ping(); err != nil {
-		E.Logger.Fatal(err)
-	}
-	fmt.Println("Database connected.")
-	return db
-}
