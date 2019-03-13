@@ -10,11 +10,11 @@ import (
 var (
 	E  *echo.Echo
 	DB *sqlx.DB
-	C  *Config
+	C  *config
 )
 
 func init() {
-	C = ReadConf()
+	C = readConf()
 	E = initEcho()
 	DB = connectDB()
 }

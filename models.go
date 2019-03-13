@@ -32,12 +32,6 @@ type (
 		EventType
 		EventOptions []EventOption
 	}
-
-	Response struct {
-		Code    int         `json:"code"`
-		Message string      `json:"message"`
-		Data    interface{} `json:"data"`
-	}
 )
 
 func connectDB() *sqlx.DB {
@@ -48,7 +42,6 @@ func connectDB() *sqlx.DB {
 	if err := db.Ping(); err != nil {
 		E.Logger.Fatal(err)
 	}
-	E.Logger.Debug("DB connected")
 	fmt.Println("Database connected.")
 	return db
 }
