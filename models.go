@@ -16,32 +16,34 @@ type (
 		Description string `json:"description"`
 	}
 
+	EventOptionGroup struct {
+		GroupID      int           `json:"group_id"`
+		GroupType    string        `json:"group_type"`
+		EventOptions []EventOption `json:"event_options"`
+	}
+
 	EventOption struct {
-		GroupID                  int    `json:"group_id"`
-		OptionID                 int    `json:"option_id"`
-		GroupType                string `json:"group_type"`
-		OptionContentDescription string `json:"option_content_description"`
-		Description              string `json:"description"`
+		OptionID    int    `json:"option_id"`
+		Description string `json:"description"`
 	}
 
 	EventDefinition struct {
 		EventType
-		EventOptions []EventOption `json:"event_options"`
+		EventOptionGroups []EventOption `json:"event_option_groups"`
 	}
 )
 
-func getEventDefinitions() ([]EventDefinition, error) {
+func queryEventDefinitions() ([]EventDefinition, error) {
 	eventTypes, err := getEventType()
 	if err != nil {
 		return nil, err
 	}
-	eventOptionContent, err := getEventOptionContent()
 	if err != nil {
 		return nil, err
 	}
 	var eventDefinitions []EventDefinition
 	for _, v := range eventTypes {
-		eventOption, err := getEventOptionByEventID(v.EventID, eventOptionContent)
+		eventOption, err := getEventOptionByEventID(v.EventID)
 		if err != nil {
 			return nil, err
 		}
@@ -76,8 +78,8 @@ func getEventType() ([]EventType, error) {
 	return eventTypes, nil
 }
 
-func getEventOptionByEventID(eventID int, optionContent map[int]string) ([]EventOption, error) {
-	eventOptionSchema := "SELECT group_id, option_id, group_type, description FROM event_option WHERE event_id = ?"
+func getEventOptionByEventID(eventID int) ([]EventOption, error) {
+	eventOptionSchema := "SELECT group_id, group_type, id, description FROM event_option WHERE event_id = $1"
 	rows, err := DB.Query(eventOptionSchema, eventID)
 	if err != nil {
 		return nil, err
@@ -88,22 +90,44 @@ func getEventOptionByEventID(eventID int, optionContent map[int]string) ([]Event
 			E.Logger.Fatal(err)
 		}
 	}()
+	var eventOptionGroups []EventOptionGroup
 	var eventOptions []EventOption
 	for rows.Next() {
-		var o EventOption
-		err := rows.Scan(&o.GroupID, &o.OptionID, &o.GroupType, &o.Description)
+		// get options
+		var groupId int
+		var groupType string
+		var optionId int
+		var description string
+		err := rows.Scan(&groupId, &optionId, &groupType, &description)
 		if err != nil {
 			return nil, err
 		}
-		o.OptionContentDescription = optionContent[o.OptionID]
-		eventOptions = append(eventOptions, o)
+		// add event option group if not contain this event option group
+		thisEventOptionGroup := EventOptionGroup{groupId, groupType, nil}
+		flag := false
+		for _, v := range eventOptionGroups {
+			if v.GroupID == groupId {
+				flag = true
+			}
+		}
+		if !flag {
+			eventOptionGroups = append(eventOptionGroups, thisEventOptionGroup)
+		}
+		// add event option into event groups
+		for i, v := range eventOptionGroups {
+			if v.GroupID == groupId {
+				eventOptionGroups[i].EventOptions = append(v.EventOptions, EventOption{optionId, description})
+			} else {
+				eventOptionGroups[i].EventOptions = []EventOption{{optionId, description}}
+			}
+		}
 	}
 	return eventOptions, nil
 }
 
-func getEventOptionContent() (map[int]string, error) {
-	eventOptionContentSchema := "SELECT id, description FROM event_option_content"
-	rows, err := DB.Query(eventOptionContentSchema)
+func queryEvent() (event []Event, err error) {
+	eventSchema := "SELECT * FROM event_option_content"
+	rows, err := DB.Queryx(eventSchema)
 	if err != nil {
 		return nil, err
 	}
@@ -113,15 +137,25 @@ func getEventOptionContent() (map[int]string, error) {
 			E.Logger.Fatal(err)
 		}
 	}()
-	var eventOptionContents = map[int]string{}
 	for rows.Next() {
-		var id int
-		var description string
-		err := rows.Scan(&id, &description)
+		var e Event
+		err = rows.StructScan(&e)
 		if err != nil {
 			return nil, err
 		}
-		eventOptionContents[id] = description
+		event = append(event, e)
 	}
-	return eventOptionContents, nil
+	return
+}
+
+func insertEvent(e *Event) error {
+	insertSchema := "INSERT INTO event (event_type, event_code, start_time, stop_time, description) VALUES ($1, $2, $3, $4, $5)"
+	_, err := DB.Exec(insertSchema, e.EventType, e.EventCode, e.StartTime, e.StopTime, e.Description)
+	return err
+}
+
+func deleteEventById(id int) error {
+	deleteSchema := "DELETE FROM event WHERE id = ?"
+	_, err := DB.Exec(deleteSchema, id)
+	return err
 }
