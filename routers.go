@@ -45,6 +45,8 @@ func initEcho() *echo.Echo {
 		api.GET("/event", getEvent)
 		api.POST("/event", postEvent)
 		api.DELETE("/event", deleteEvent)
+
+		// TODO: download csv files by given date
 	}
 
 	fmt.Println("Router initialized.")
