@@ -40,6 +40,7 @@ func initEcho() *echo.Echo {
 	api := e.Group("/api")
 	{
 		api.GET("/ping", ping)
+		api.GET("/event_definition", eventDefinition)
 	}
 
 	fmt.Println("Router initialized.")
