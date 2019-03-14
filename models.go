@@ -16,20 +16,20 @@ type (
 		Description string `json:"description"`
 	}
 
+	EventOption struct {
+		OptionID    int    `json:"option_id"`
+		Description string `json:"description"`
+	}
+
 	EventOptionGroup struct {
 		GroupID      int           `json:"group_id"`
 		GroupType    string        `json:"group_type"`
 		EventOptions []EventOption `json:"event_options"`
 	}
 
-	EventOption struct {
-		OptionID    int    `json:"option_id"`
-		Description string `json:"description"`
-	}
-
 	EventDefinition struct {
 		EventType
-		EventOptionGroups []EventOption `json:"event_option_groups"`
+		EventOptionGroups []EventOptionGroup `json:"event_option_groups"`
 	}
 )
 
@@ -43,11 +43,11 @@ func queryEventDefinitions() ([]EventDefinition, error) {
 	}
 	var eventDefinitions []EventDefinition
 	for _, v := range eventTypes {
-		eventOption, err := getEventOptionByEventID(v.EventID)
+		eventOptionGroups, err := getEventOptionGroupsByEventID(v.EventID)
 		if err != nil {
 			return nil, err
 		}
-		e := EventDefinition{v, eventOption}
+		e := EventDefinition{v, eventOptionGroups}
 		eventDefinitions = append(eventDefinitions, e)
 	}
 
@@ -78,7 +78,7 @@ func getEventType() ([]EventType, error) {
 	return eventTypes, nil
 }
 
-func getEventOptionByEventID(eventID int) ([]EventOption, error) {
+func getEventOptionGroupsByEventID(eventID int) ([]EventOptionGroup, error) {
 	eventOptionSchema := "SELECT group_id, group_type, id, description FROM event_option WHERE event_id = $1"
 	rows, err := DB.Query(eventOptionSchema, eventID)
 	if err != nil {
@@ -91,38 +91,36 @@ func getEventOptionByEventID(eventID int) ([]EventOption, error) {
 		}
 	}()
 	var eventOptionGroups []EventOptionGroup
-	var eventOptions []EventOption
 	for rows.Next() {
 		// get options
 		var groupId int
 		var groupType string
 		var optionId int
 		var description string
-		err := rows.Scan(&groupId, &optionId, &groupType, &description)
+		err := rows.Scan(&groupId, &groupType, &optionId, &description)
 		if err != nil {
 			return nil, err
 		}
 		// add event option group if not contain this event option group
-		thisEventOptionGroup := EventOptionGroup{groupId, groupType, nil}
-		flag := false
+		thisEventOptionGroup := EventOptionGroup{groupId, groupType, []EventOption{}}
+		groupIsExist := false
 		for _, v := range eventOptionGroups {
 			if v.GroupID == groupId {
-				flag = true
+				groupIsExist = true
+				break
 			}
 		}
-		if !flag {
+		if !groupIsExist {
 			eventOptionGroups = append(eventOptionGroups, thisEventOptionGroup)
 		}
 		// add event option into event groups
 		for i, v := range eventOptionGroups {
 			if v.GroupID == groupId {
 				eventOptionGroups[i].EventOptions = append(v.EventOptions, EventOption{optionId, description})
-			} else {
-				eventOptionGroups[i].EventOptions = []EventOption{{optionId, description}}
 			}
 		}
 	}
-	return eventOptions, nil
+	return eventOptionGroups, nil
 }
 
 func queryEvent() (event []Event, err error) {
