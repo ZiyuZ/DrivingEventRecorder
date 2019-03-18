@@ -27,6 +27,8 @@ func initEcho() *echo.Echo {
 			Format: "${time_rfc3339} method=${method}, uri=${uri}, status=${status}\n",
 		}))
 	}
+	e.Logger.SetHeader("${time_rfc3339} [${level}] <${short_file}:${line}> ${message}")
+
 	// CORS middleware
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -46,7 +48,9 @@ func initEcho() *echo.Echo {
 		api.POST("/event", postEvent)
 		api.DELETE("/event", deleteEvent)
 
-		// TODO: download csv files by given date
+		api.GET("/passenger_comfort_level", getComfortLevel)
+		api.POST("/passenger_comfort_level", postComfortLevel)
+		api.DELETE("/passenger_comfort_level", deleteComfortLevel)
 	}
 
 	fmt.Println("Router initialized.")

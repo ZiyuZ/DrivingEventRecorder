@@ -3,11 +3,12 @@ package main
 type (
 	// Recorded event struct in driving behavior experiment
 	Event struct {
-		EventType   int    `json:"event_type"`
-		EventCode   string `json:"event_code"`
-		StartTime   string `json:"start_time"`
-		StopTime    string `json:"stop_time"`
-		Description string `json:"description"`
+		ID             int    `json:"id"`
+		EventType      int    `json:"event_type"`
+		EventCode      string `json:"event_code"`
+		StartTimestamp int    `json:"start_timestamp"`
+		StopTimestamp  int    `json:"stop_timestamp"`
+		Description    string `json:"description"`
 	}
 
 	// Definition struct of events
@@ -31,10 +32,16 @@ type (
 		EventType
 		EventOptionGroups []EventOptionGroup `json:"event_option_groups"`
 	}
+
+	PassengerComfortLevel struct {
+		ID           int `json:"id"`
+		Timestamp    int `json:"timestamp"`
+		ComfortLevel int `json:"comfort_level"`
+	}
 )
 
 func queryEventDefinitions() ([]EventDefinition, error) {
-	eventTypes, err := getEventType()
+	eventTypes, err := queryEventType()
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +61,7 @@ func queryEventDefinitions() ([]EventDefinition, error) {
 	return eventDefinitions, nil
 }
 
-func getEventType() ([]EventType, error) {
+func queryEventType() ([]EventType, error) {
 	eventTypeSchema := "SELECT id, description FROM event_type"
 	rows, err := DB.Query(eventTypeSchema)
 	if err != nil {
@@ -124,8 +131,8 @@ func getEventOptionGroupsByEventID(eventID int) ([]EventOptionGroup, error) {
 }
 
 func queryEvent() (event []Event, err error) {
-	eventSchema := "SELECT * FROM event_option_content"
-	rows, err := DB.Queryx(eventSchema)
+	querySchema := "SELECT id, event_type, event_code, start_timestamp, stop_timestamp, description FROM event"
+	rows, err := DB.Query(querySchema)
 	if err != nil {
 		return nil, err
 	}
@@ -137,7 +144,7 @@ func queryEvent() (event []Event, err error) {
 	}()
 	for rows.Next() {
 		var e Event
-		err = rows.StructScan(&e)
+		err = rows.Scan(&e.ID, &e.EventType, &e.EventCode, &e.StartTimestamp, &e.StopTimestamp, &e.Description)
 		if err != nil {
 			return nil, err
 		}
@@ -147,13 +154,48 @@ func queryEvent() (event []Event, err error) {
 }
 
 func insertEvent(e *Event) error {
-	insertSchema := "INSERT INTO event (event_type, event_code, start_time, stop_time, description) VALUES ($1, $2, $3, $4, $5)"
-	_, err := DB.Exec(insertSchema, e.EventType, e.EventCode, e.StartTime, e.StopTime, e.Description)
+	insertSchema := "INSERT INTO event (event_type, event_code, start_timestamp, stop_timestamp, description) VALUES ($1, $2, $3, $4, $5)"
+	_, err := DB.Exec(insertSchema, e.EventType, e.EventCode, e.StartTimestamp, e.StopTimestamp, e.Description)
 	return err
 }
 
 func deleteEventById(id int) error {
-	deleteSchema := "DELETE FROM event WHERE id = ?"
+	deleteSchema := "DELETE FROM event WHERE id = $1"
+	_, err := DB.Exec(deleteSchema, id)
+	return err
+}
+
+func queryComfortLevel() (pcls []PassengerComfortLevel, err error) {
+	querySchema := "SELECT id, timestamp, comfort_level FROM passenger_comfort_level"
+	rows, err := DB.Query(querySchema)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			E.Logger.Fatal(err)
+		}
+	}()
+	for rows.Next() {
+		var pcl PassengerComfortLevel
+		err = rows.Scan(&pcl.ID, &pcl.Timestamp, &pcl.ComfortLevel)
+		if err != nil {
+			return nil, err
+		}
+		pcls = append(pcls, pcl)
+	}
+	return
+}
+
+func insertComfortLevel(pcl *PassengerComfortLevel) error {
+	insertSchema := "INSERT INTO passenger_comfort_level (timestamp, comfort_level) VALUES ($1, $2)"
+	_, err := DB.Exec(insertSchema, pcl.Timestamp, pcl.ComfortLevel)
+	return err
+}
+
+func deleteComfortLevelByID(id int) error {
+	deleteSchema := "DELETE FROM passenger_comfort_level WHERE id = $1"
 	_, err := DB.Exec(deleteSchema, id)
 	return err
 }

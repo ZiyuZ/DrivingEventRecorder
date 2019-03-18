@@ -66,7 +66,7 @@ func readConf() *config {
 					filepath.Join(".", "db", "init_db.sql"))
 				err := exec.Command("cmd", "/c", executablePath, databasePath, "<", sqlPath).Start()
 				if err == nil {
-					fmt.Println("Initialized database successfully .")
+					fmt.Println("Initialized database successfully.")
 					return databasePath
 				} else {
 					fmt.Printf("Failed to create database: %v\n", err)
