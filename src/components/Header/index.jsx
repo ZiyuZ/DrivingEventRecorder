@@ -42,7 +42,7 @@ export default class Header extends Component {
           defaultSelectedKeys={["0"]}
         >
           {this.state.menu}
-        </Menu>{" "}
+        </Menu>
       </Header>
     );
   }

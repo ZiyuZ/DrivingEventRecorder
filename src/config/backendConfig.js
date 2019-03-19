@@ -1,5 +1,6 @@
 export default {
-    backendApi: "http://localhost:5000/api",
-    eventApi: "/event",
-    eventsDefinitionApi: "/events_list",
-}
+  backendApi: "http://localhost:5000/api",
+  eventApi: "/event",
+  eventDefinitionApi: "/event_definition",
+  passengerComfortLevelApi: "/passenger_comfort_level",
+};

@@ -10,7 +10,8 @@ export default class Axios {
         method: options.method,
         baseURL: backendConfig.backendApi,
         timeout: 3000,
-        params: options.data || ""
+        params: options.params || "",
+        data: options.data || "",
       }).then(response => {
         if (response.status === 200) {
           let res = response.data;

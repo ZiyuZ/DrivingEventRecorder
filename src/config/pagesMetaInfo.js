@@ -4,24 +4,30 @@ export default [
     id: 0,
     pageTitle: "首页",
     pageUrl: "/",
-    icon: "pie-chart"
+    icon: "home"
   },
   {
     id: 1,
-    pageTitle: "视频事件记录",
+    pageTitle: "视频事件",
     pageUrl: "/recorder/video_based",
-    icon: "pie-chart"
+    icon: "video-camera"
   },
   {
     id: 2,
-    pageTitle: "实时事件记录",
+    pageTitle: "实时事件",
     pageUrl: "/recorder/real_time",
-    icon: "pie-chart"
+    icon: "dashboard"
   },
   {
     id: 3,
+    pageTitle: "乘客舒适等级",
+    pageUrl: "/recorder/passenger_comfort_level",
+    icon: "smile"
+  },
+  {
+    id: 4,
     pageTitle: "事件列表",
-    pageUrl: "/recorder/events",
-    icon: "pie-chart"
-  }
+    pageUrl: "/recorder/event",
+    icon: "bars"
+  },
 ];

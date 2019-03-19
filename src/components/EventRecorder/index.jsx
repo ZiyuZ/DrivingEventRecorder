@@ -1,219 +1,294 @@
 import React, { Component } from "react";
-import Axios from "../../utils/utils";
+import Axios from "../../utils/axios";
 import backendConfig from "../../config/backendConfig";
-import {
-  Collapse,
-  Radio,
-  Checkbox,
-  Button,
-  Spin,
-  Alert,
-  notification,
-  Input
-} from "antd";
 import dayjs from "dayjs";
 import "./index.less";
+import {
+  Col,
+  Row,
+  Card,
+  Spin,
+  Modal,
+  Empty,
+  List,
+  Button,
+  Radio,
+  Checkbox,
+  Input,
+  notification,
+  Popconfirm
+} from "antd";
+
+//TODO: 拆分这个文件
 
 export default class EventRecorder extends Component {
   state = {
-    loaded: false,
-    buttonLoading: false,
-    event: { eventId: "-1", eventRecorder: [] }
+    modalVisible: false,
+    thisEventDefinition: null,
+    staging: []
   };
 
   componentDidMount = () => {
     Axios.ajax({
-      url: backendConfig.eventsDefinitionApi,
+      url: backendConfig.eventDefinitionApi,
       method: "GET"
     }).then(res => {
       this.setState({
-        eventsDefinition: res.data,
-        loaded: true
+        eventDefinition: res.data
       });
     });
   };
 
-  handleSubmit = () => {
-    const time = dayjs().format("YYYY-MM-DDTHH:mm:ss");
-    const event = this.state.event;
-    const unusedRadios = event.eventRecorder.filter(
-      value => value.type === "radio" && value.value === null
+  handleEventButtonClicked = event_id => {
+    const event = {
+      event_type: event_id,
+      event_code: null,
+      start_timestamp: dayjs().unix(),
+      stop_timestamp: 0,
+      description: ""
+    };
+    const thisEventDefinition = this.state.eventDefinition.find(
+      value => value.event_id === event_id
     );
-    if (event.eventId === "-1") {
-      notification.error({
-        message: "提交错误",
-        description: "请至少选择一项事件!"
-      });
-      return;
-    }
-    if (unusedRadios.length !== 0) {
-      notification.error({
-        message: "提交错误",
-        description: "有单选项目未被选中!"
-      });
-      return;
-    }
-
-    this.setState({ buttonLoading: true });
-    const eventString =
-      event.eventId +
-      "-" +
-      event.eventRecorder
-        .map(e =>
-          e.type === "check"
-            ? e.value === null
-              ? ""
-              : e.value.join("")
-            : e.value
-        )
-        .join("");
-
-    console.log(eventString);
-    Axios.ajax({
-      url: backendConfig.eventApi,
-      method: "POST",
-      data: { time, event: eventString }
-    }).then(
-      () => {
-        this.setState({ buttonLoading: false });
-      },
-      () => {
-        this.setState({ buttonLoading: false });
-      }
-    );
-  };
-
-  handleCodeChange = (eventGroup, value) => {
-    const eventRecorder = this.state.event.eventRecorder.map(event => {
-      return eventGroup === event.group
-        ? { group: eventGroup, type: event.type, value }
-        : event;
+    event.event_code = Array.from({
+      length: thisEventDefinition.event_option_groups.length
     });
     this.setState({
-      event: { eventId: this.state.event.eventId, eventRecorder }
+      thisEventDefinition,
+      thisEventInfo: event
     });
+    this.setModalVisible(true);
   };
 
-  handleEventChange = eventId => {
-    if (eventId === undefined) {
-      this.setState({ event: { eventId: "-1", eventRecorder: [] } });
+  handleModalOk = () => {
+    const { staging, thisEventInfo, thisEventDefinition } = this.state;
+    if (
+      thisEventInfo.event_code.some(
+        (value, index) =>
+          value === undefined &&
+          thisEventDefinition.event_option_groups[index].group_type !== "c"
+      )
+    ) {
+      notification.error({
+        message: "Value Error",
+        description:
+          "Please ensure all radio buttons and text field are filled in."
+      });
       return;
     }
-    const eventOptions = this.state.eventsDefinition[eventId - 1].option;
-    const eventRecorder = eventOptions.map(option => {
-      return {
-        group: option.groupId,
-        type: option.groupType,
-        value: null
-      };
-    });
-    const event = { eventId, eventRecorder };
-    this.setState({ event });
+    thisEventInfo.event_code = thisEventInfo.event_code
+      .flat()
+      .filter(value => value);
+    staging.unshift(thisEventInfo);
+    this.setState({ staging });
+    this.setModalVisible(false);
   };
 
-  renderEvents = () => {
-    if (this.state.loaded) {
+  setModalVisible = modalVisible => {
+    if (modalVisible) {
+      this.setState({ modalVisible });
+    } else {
+      this.setState({
+        modalVisible,
+        thisEventInfo: null,
+        thisEventDefinition: null
+      });
+    }
+  };
+
+  renderModal = () => {
+    const {
+      event_id,
+      description,
+      event_option_groups
+    } = this.state.thisEventDefinition;
+    return (
+      <Modal
+        centered
+        title={event_id + ". " + description}
+        visible={this.state.modalVisible}
+        onOk={() => this.handleModalOk()}
+        onCancel={() => this.setModalVisible(false)}
+      >
+        <List
+          size="small"
+          bordered
+          dataSource={event_option_groups}
+          renderItem={item => (
+            <List.Item>{this.renderOptionGroup(item)}</List.Item>
+          )}
+        />
+      </Modal>
+    );
+  };
+
+  handleCodeChange = (group_type, group_id, value) => {
+    const { thisEventInfo } = this.state;
+
+    switch (group_type) {
+      case "r":
+        thisEventInfo.event_code[group_id - 1] = value;
+        break;
+      case "c":
+        thisEventInfo.event_code[group_id - 1] = value.sort();
+        break;
+      case "t":
+        thisEventInfo.description = value;
+        break;
+      default:
+        console.warn("Unknown group type: " + group_type);
+    }
+    this.setState({ thisEventInfo });
+  };
+
+  renderOptionGroup = group => {
+    const { group_id, group_type, event_options } = group;
+    switch (group_type) {
+      case "r":
+        return (
+          <Radio.Group
+            name={`${group_id}`}
+            key={group_id}
+            className="option-group"
+            onChange={e =>
+              this.handleCodeChange(group_type, group_id, e.target.value)
+            }
+          >
+            {event_options.map(option => (
+              <Radio value={option.option_id} key={option.option_id}>
+                {option.description}
+              </Radio>
+            ))}
+          </Radio.Group>
+        );
+      case "c":
+        return (
+          <Checkbox.Group
+            key={group_id}
+            className="option-group"
+            onChange={checkedList =>
+              this.handleCodeChange(group_type, group_id, checkedList)
+            }
+          >
+            {event_options.map(option => (
+              <Checkbox value={option.option_id} key={option.option_id}>
+                {option.description}
+              </Checkbox>
+            ))}
+          </Checkbox.Group>
+        );
+      case "t":
+        return (
+          <Input size="small" placeholder={event_options[0].description} />
+        );
+      default:
+        console.warn("Unknown group type: " + group_type);
+    }
+  };
+
+  deleteElementOfStaging = (index) => {
+    const { staging } = this.state;
+    staging.splice(index, 1);
+    this.setState({ staging })
+  }
+
+  handleSubmit = (index) => {
+    //TODO: submit event
+    this.deleteElementOfStaging(index)
+  }
+
+  renderEventSubmitButton = (item, index) => {
+    return (
+      <List.Item
+        actions={[
+          <Button
+            type="primary"
+            shape="circle"
+            icon="save"
+            onClick={() => this.handleSubmit(index)}
+          />,
+          <Popconfirm
+            placement="top"
+            title="Delete event?"
+            onConfirm={() => this.deleteElementOfStaging(index)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <Button type="danger" shape="circle" icon="delete" />
+          </Popconfirm>
+        ]}
+      >
+        <List.Item.Meta
+          title={item.event_type}
+          description={JSON.stringify(item.event_code)}
+        />
+      </List.Item>
+    );
+  };
+
+  renderStaging = () => {
+    const { staging } = this.state;
+    return (
+      <List
+        size="small"
+        bordered
+        itemLayout="horizontal"
+        dataSource={staging}
+        renderItem={(item, value) => this.renderEventSubmitButton(item, value)}
+      />
+    );
+  };
+
+  render() {
+    if (this.state.eventDefinition) {
       return (
-        <Collapse
-          bordered={false}
-          accordion
-          className="events-wrap"
-          onChange={this.handleEventChange}
-          destroyInactivePanel
-        >
-          {this.state.eventsDefinition.map(event => {
-            const { id, description, option } = event;
-            return (
-              <Collapse.Panel header={id + ". " + description} key={id}>
-                {this.renderOption(option)}
-              </Collapse.Panel>
-            );
-          })}
-        </Collapse>
+        <Row className="event-recorder">
+          <Col span={12}>
+            <Card
+              title="Events"
+              type="inner"
+              bordered
+              className="children-card"
+            >
+              {this.state.eventDefinition.map(event => {
+                const { event_id, description } = event;
+                return (
+                  <Button
+                    type="primary"
+                    block
+                    key={event_id}
+                    onClick={() => this.handleEventButtonClicked(event_id)}
+                    className="event-button"
+                  >
+                    {event_id + ". " + description}
+                  </Button>
+                );
+              })}
+            </Card>
+          </Col>
+          <Col span={12}>
+            <Card
+              title="staging"
+              type="inner"
+              bordered
+              className="children-card"
+            >
+              {this.state.staging.length === 0 ? (
+                <Empty />
+              ) : (
+                this.renderStaging()
+              )}
+            </Card>
+          </Col>
+          {this.state.thisEventDefinition ? this.renderModal() : null}
+        </Row>
       );
     } else {
       return (
         <Spin tip="Loading..." className="events-wrap">
-          <Alert
-            message="正在加载"
-            description="正在加载事件列表, 请稍候..."
-            type="info"
-            className="events-wrap"
-          />
+          <Empty />
         </Spin>
       );
     }
-  };
-
-  renderOption = option => {
-    return option.map(opt => {
-      const { groupId, groupType, content } = opt;
-      if (groupType === "radio") {
-        return (
-          <Radio.Group
-            name={groupId}
-            key={groupId}
-            className="option-group"
-            onChange={e => this.handleCodeChange(groupId, e.target.value)}
-          >
-            {content.map(content => {
-              return (
-                <Radio value={content.code} key={content.code}>
-                  {content.description}
-                </Radio>
-              );
-            })}
-          </Radio.Group>
-        );
-      } else if (groupType === "check") {
-        return (
-          <Checkbox.Group
-            name={groupId}
-            key={groupId}
-            className="option-group"
-            onChange={checkedList =>
-              this.handleCodeChange(groupId, checkedList.sort())
-            }
-          >
-            {content.map(content => {
-              return (
-                <Checkbox value={content.code} key={content.code}>
-                  {content.description}
-                </Checkbox>
-              );
-            })}
-          </Checkbox.Group>
-        );
-      } else if (groupType === "text") {
-        //TODO: Text submission
-        return content.map(content => {
-          return (
-            <Input
-              key={content.code}
-              placeholder={content.description}
-              className="input"
-            />
-          );
-        });
-      }
-      console.log(opt);
-      return <span>Unkonwn option</span>;
-    });
-  };
-
-  render() {
-    return (
-      <div>
-        <Button
-          type="primary"
-          onClick={this.handleSubmit}
-          loading={this.state.buttonLoading}
-          className="submit-button"
-        >
-          {this.state.buttonLoading ? "提交中..." : "提交"}
-        </Button>
-        {this.renderEvents()}
-      </div>
-    );
   }
 }
