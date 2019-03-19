@@ -4,5 +4,6 @@
         "backend",
         "zhzy"
     ],
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "javascript.implicitProjectConfig.experimentalDecorators": true
 }

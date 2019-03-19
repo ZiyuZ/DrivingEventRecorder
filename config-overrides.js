@@ -1,5 +1,7 @@
-const { override, fixBabelImports, addLessLoader } = require("customize-cra");
+const { override, fixBabelImports, addLessLoader, addDecoratorsLegacy, disableEsLint } = require("customize-cra");
 module.exports = override(
+  addDecoratorsLegacy(),
+  disableEsLint(),
   fixBabelImports("import", {
     libraryName: "antd",
     libraryDirectory: "es",

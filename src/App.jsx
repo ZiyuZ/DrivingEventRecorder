@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import "./style/App.less";
 import { Layout } from "antd";
 import Header from "./components/Header";
+import DevTools from "mobx-react-devtools";
 
 class App extends Component {
   render() {
@@ -23,6 +24,7 @@ class App extends Component {
             @ SEU
           </Footer>
         </Layout>
+        <DevTools/>
       </div>
     );
   }

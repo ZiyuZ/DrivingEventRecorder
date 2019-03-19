@@ -268,7 +268,7 @@ export default class EventRecorder extends Component {
           </Col>
           <Col span={12}>
             <Card
-              title="staging"
+              title="Staging Area"
               type="inner"
               bordered
               className="children-card"
