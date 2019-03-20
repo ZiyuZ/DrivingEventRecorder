@@ -1,26 +1,50 @@
 import React, { Component } from "react";
-import { Card, Button } from "antd";
+import { Link } from "react-router-dom";
+import { inject, observer } from "mobx-react";
+import { Card, Button, Alert } from "antd";
 import pagesMetaInfo from "../../config/pagesMetaInfo";
 import "./index.less";
+@inject("store")
+@observer
 export default class Home extends Component {
+  handleButtonClicked = id => {
+    this.props.store.GlobalStore.changeSelectedPageId(id.toString());
+  };
+
+  renderButton = item => {
+    const { id, pageTitle, pageUrl, icon } = item;
+    return (
+      <Link
+        key={id}
+        to={{
+          pathname: pageUrl
+        }}
+      >
+        <Button
+          type="primary"
+          size="large"
+          title={pageTitle}
+          icon={icon}
+          className="router-button"
+          onClick={() => this.handleButtonClicked(id)}
+        >
+          {pageTitle}
+        </Button>
+      </Link>
+    );
+  };
+
   render() {
     return (
-      <Card title="首页" className="main card-wrap">
-        {pagesMetaInfo.map(item => {
-          const { pageTitle, pageUrl, icon } = item;
-          return (
-            <Button
-              type="primary"
-              size="large"
-              title={pageTitle}
-              href={pageUrl}
-              icon={icon}
-              className="router-button"
-            >
-              {pageTitle}
-            </Button>
-          );
-        })}
+      <Card title="首页" className="main card-wrap home-page-card">
+        <Alert
+          message="注意: 目前只有 实时事件 和 数据视图 模块被实现."
+          type="warning"
+          closable
+        />
+        <div className="link-button-group">
+          {pagesMetaInfo.map(this.renderButton)}
+        </div>
       </Card>
     );
   }

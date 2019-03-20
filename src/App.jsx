@@ -24,7 +24,7 @@ class App extends Component {
             @ SEU
           </Footer>
         </Layout>
-        <DevTools/>
+        <DevTools />
       </div>
     );
   }

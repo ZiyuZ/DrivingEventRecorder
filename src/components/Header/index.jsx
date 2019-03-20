@@ -1,13 +1,15 @@
 import React, { Component } from "react";
+import { inject, observer } from "mobx-react";
 import Pages from "../../config/pagesMetaInfo";
 import { Menu, Layout, Icon } from "antd";
 import { NavLink } from "react-router-dom";
 import logo from "../../static/logo.svg";
-import "./index.less"
+import "./index.less";
 
+@inject("store")
+@observer
 export default class Header extends Component {
-
-  state = {}
+  state = {};
 
   componentDidMount = () => {
     const menu = this.renderMenu(Pages);
@@ -29,6 +31,7 @@ export default class Header extends Component {
 
   render() {
     const { Header } = Layout;
+    const { selectedPageId, changeSelectedPageId } = this.props.store.GlobalStore;
     return (
       <Header>
         <div className="logo">
@@ -36,10 +39,11 @@ export default class Header extends Component {
           <span>事件记录器</span>
         </div>
         <Menu
+          selectedKeys={selectedPageId}
           theme="dark"
           mode="horizontal"
           className="menu"
-          defaultSelectedKeys={["0"]}
+          onClick={e => changeSelectedPageId(e.key)}
         >
           {this.state.menu}
         </Menu>

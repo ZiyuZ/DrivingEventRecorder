@@ -4,38 +4,34 @@ import App from "./App";
 import Home from "./pages/home";
 import VideoBasedRecorder from "./pages/videoBasedRecorder";
 import RealTimeRecorder from "./pages/realTimeRecorder";
-import Event from "./pages/event";
+import DataView from "./pages/dataView";
 import PassengerComfortLevelRecorder from "./pages/passengerComfortLevelRecorder";
 
+import { Provider } from "mobx-react";
+import store from "./stores";
+
 export default class router extends Component {
+  renderRoutes = () => (
+    <Switch>
+      <Route exact path="/" component={Home} />
+      <Route path="/recorder/video_based" component={VideoBasedRecorder} />
+      <Route path="/recorder/real_time" component={RealTimeRecorder} />
+      <Route
+        path="/recorder/passenger_comfort_level"
+        component={PassengerComfortLevelRecorder}
+      />
+      <Route path="/recorder/data_view" component={DataView} />
+    </Switch>
+  );
+
   render() {
     return (
       <BrowserRouter>
-        <App>
-          <Route
-            path="/"
-            render={() => {
-              return (
-                <Switch>
-                  <Route exact path="/" component={Home} />
-                  <Route
-                    path="/recorder/video_based"
-                    component={VideoBasedRecorder}
-                  />
-                  <Route
-                    path="/recorder/real_time"
-                    component={RealTimeRecorder}
-                  />
-                  <Route
-                    path="/recorder/passenger_comfort_level"
-                    component={PassengerComfortLevelRecorder}
-                  />
-                  <Route path="/recorder/event" component={Event} />
-                </Switch>
-              );
-            }}
-          />
-        </App>
+        <Provider store={store}>
+          <App>
+            <Route path="/" render={this.renderRoutes} />
+          </App>
+        </Provider>
       </BrowserRouter>
     );
   }

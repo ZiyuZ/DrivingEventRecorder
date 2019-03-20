@@ -26,8 +26,8 @@ export default [
   },
   {
     id: 4,
-    pageTitle: "事件列表",
-    pageUrl: "/recorder/event",
-    icon: "bars"
+    pageTitle: "数据视图",
+    pageUrl: "/recorder/data_view",
+    icon: "area-chart"
   },
 ];
