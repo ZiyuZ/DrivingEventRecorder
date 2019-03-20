@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"time"
 )
 
 var confPath = "config.ini"
@@ -66,6 +67,7 @@ func readConf() *config {
 					filepath.Join(".", "db", "init_db.sql"))
 				err := exec.Command("cmd", "/c", executablePath, databasePath, "<", sqlPath).Start()
 				if err == nil {
+					time.Sleep(3 * time.Second)
 					fmt.Println("Initialized database successfully.")
 					return databasePath
 				} else {
