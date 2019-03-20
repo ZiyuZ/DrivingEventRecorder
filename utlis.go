@@ -107,11 +107,11 @@ func readConf() *config {
 		{"LogPath", c.LogPath},
 	}
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Config Name", "Value"})
-	table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold},
-		tablewriter.Colors{tablewriter.Bold})
-	table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlackColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor})
+	table.SetHeader([]string{"Option", "Value"})
+	//table.SetHeaderColor(tablewriter.Colors{tablewriter.Bold},
+	//	tablewriter.Colors{tablewriter.Bold})
+	//table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiBlackColor},
+	//	tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor})
 	for _, v := range data {
 		table.Append(v)
 	}
