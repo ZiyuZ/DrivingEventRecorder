@@ -4,7 +4,7 @@ type (
 	// Recorded event struct in driving behavior experiment
 	Event struct {
 		ID             int    `json:"id"`
-		EventType      int    `json:"event_type"`
+		EventID      int    `json:"event_id"`
 		EventCode      string `json:"event_code"`
 		StartTimestamp int    `json:"start_timestamp"`
 		StopTimestamp  int    `json:"stop_timestamp"`
@@ -131,7 +131,7 @@ func getEventOptionGroupsByEventID(eventID int) ([]EventOptionGroup, error) {
 }
 
 func queryEvent() (event []Event, err error) {
-	querySchema := "SELECT id, event_type, event_code, start_timestamp, stop_timestamp, description FROM event"
+	querySchema := "SELECT id, event_id, event_code, start_timestamp, stop_timestamp, description FROM event"
 	rows, err := DB.Query(querySchema)
 	if err != nil {
 		return nil, err
@@ -144,7 +144,7 @@ func queryEvent() (event []Event, err error) {
 	}()
 	for rows.Next() {
 		var e Event
-		err = rows.Scan(&e.ID, &e.EventType, &e.EventCode, &e.StartTimestamp, &e.StopTimestamp, &e.Description)
+		err = rows.Scan(&e.ID, &e.EventID, &e.EventCode, &e.StartTimestamp, &e.StopTimestamp, &e.Description)
 		if err != nil {
 			return nil, err
 		}
@@ -154,8 +154,8 @@ func queryEvent() (event []Event, err error) {
 }
 
 func insertEvent(e *Event) error {
-	insertSchema := "INSERT INTO event (event_type, event_code, start_timestamp, stop_timestamp, description) VALUES ($1, $2, $3, $4, $5)"
-	_, err := DB.Exec(insertSchema, e.EventType, e.EventCode, e.StartTimestamp, e.StopTimestamp, e.Description)
+	insertSchema := "INSERT INTO event (event_id, event_code, start_timestamp, stop_timestamp, description) VALUES ($1, $2, $3, $4, $5)"
+	_, err := DB.Exec(insertSchema, e.EventID, e.EventCode, e.StartTimestamp, e.StopTimestamp, e.Description)
 	return err
 }
 

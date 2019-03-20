@@ -44,7 +44,7 @@ func postEvent(c echo.Context) error {
 		E.Logger.Error(message)
 		return c.JSON(http.StatusBadRequest, &Response{2, message, nil})
 	}
-	if e.StartTimestamp == 0 || e.StopTimestamp == 0 || e.EventType == 0 {
+	if e.StartTimestamp == 0 || e.StopTimestamp == 0 || e.EventID == 0 {
 		message := "Bad event structure: Zero value exists. Event type or timestamps should not be null."
 		E.Logger.Error(message)
 		return c.JSON(http.StatusBadRequest, &Response{2, message, nil})
