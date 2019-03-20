@@ -36,7 +36,7 @@ func initEcho() *echo.Echo {
 	}))
 
 	// static file router
-	e.File("/", C.PublicPath)
+	e.Static("/", C.PublicPath)
 
 	// api router
 	api := e.Group("/api")

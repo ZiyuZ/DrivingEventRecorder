@@ -34,6 +34,9 @@ func getEvent(c echo.Context) error {
 		E.Logger.Error(message)
 		return c.JSON(http.StatusInternalServerError, &Response{1, message, nil})
 	}
+	if len(data) == 0 {
+		return c.JSON(http.StatusOK, &Response{0, "No events.", []int{}})
+	}
 	return c.JSON(http.StatusOK, &Response{0, "Get events successfully", data})
 }
 
