@@ -50,9 +50,6 @@ export default class EventRecorderModel {
     const keys = Object.keys(eventProps);
     if (keys.length === 0) return;
     runInAction(() => {
-      if (this.thisEventSelected == false) {
-        this.thisEventSelected = true;
-      }
       keys.map(key => {
         this.thisEvent[key] = eventProps[key];
         if (key === "event_id" && eventProps[key] != null) {
