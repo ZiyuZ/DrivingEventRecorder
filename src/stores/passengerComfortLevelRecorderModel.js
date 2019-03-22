@@ -44,9 +44,10 @@ export default class PassengerComfortLevelRecorderModel {
       url: backendConfig.passengerComfortLevelApi,
       method: "POST",
       data
-    }).then(
-      () => {
-        this.lastPassengerComfortLevel = this.passengerComfortLevel;
+    }).then(() => {
+        runInAction(() => {
+          this.lastPassengerComfortLevel = this.passengerComfortLevel;
+        })
       }
     ).catch(res => {
       console.error(res);
