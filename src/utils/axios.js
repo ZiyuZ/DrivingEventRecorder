@@ -1,6 +1,6 @@
 import axios from "axios";
 import backendConfig from "../config/backendConfig";
-import { Modal, message } from "antd";
+import {Modal, message} from "antd";
 
 export default class Axios {
   static ajax(options) {
@@ -16,7 +16,7 @@ export default class Axios {
         if (response.status === 200) {
           let res = response.data;
           if (res.code === 0) {
-            message.success(res.message)
+            message.success(res.message);
             resolve(res);
           } else {
             Modal.error({

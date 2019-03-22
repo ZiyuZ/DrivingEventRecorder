@@ -1,7 +1,6 @@
 import { observable, action, configure, runInAction } from "mobx";
 import Axios from "../utils/axios";
 import backendConfig from "../config/backendConfig";
-import { resolve } from "dns";
 
 configure({ enforceActions: "always" });
 
