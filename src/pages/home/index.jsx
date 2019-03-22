@@ -45,6 +45,7 @@ export default class Home extends Component {
         <div className="link-button-group">
           {pagesMetaInfo.map(this.renderButton)}
         </div>
+        {/*TODO: 配置后端选项, 一些文本框就行*/}
       </Card>
     );
   }

@@ -1,27 +1,21 @@
-import React, { Component } from "react";
-import { inject, observer } from "mobx-react";
+import React, {Component} from "react";
+import {inject, observer} from "mobx-react";
 import Pages from "../../config/pagesMetaInfo";
-import { Menu, Layout, Icon } from "antd";
-import { NavLink } from "react-router-dom";
+import {Menu, Layout, Icon, Row, Col} from "antd";
+import {NavLink} from "react-router-dom";
 import logo from "../../static/logo.svg";
 import "./index.less";
 
 @inject("store")
 @observer
 export default class Header extends Component {
-  state = {};
-
-  componentDidMount = () => {
-    const menu = this.renderMenu(Pages);
-    this.setState({ menu });
-  };
 
   renderMenu = data => {
     return data.map(item => {
       return (
         <Menu.Item key={item.id}>
           <NavLink to={item.pageUrl}>
-            <Icon type={item.icon} />
+            <Icon type={item.icon}/>
             <span>{item.pageTitle}</span>
           </NavLink>
         </Menu.Item>
@@ -30,23 +24,29 @@ export default class Header extends Component {
   };
 
   render() {
-    const { Header } = Layout;
-    const { selectedPageId, changeSelectedPageId } = this.props.store.GlobalStore;
+    const {Header} = Layout;
+    const {selectedPageId, changeSelectedPageId} = this.props.store.GlobalStore;
     return (
       <Header>
-        <div className="logo">
-          <img src={logo} alt="logo" />
-          <span>事件记录器</span>
-        </div>
-        <Menu
-          selectedKeys={selectedPageId}
-          theme="dark"
-          mode="horizontal"
-          className="menu"
-          onClick={e => changeSelectedPageId(e.key)}
-        >
-          {this.state.menu}
-        </Menu>
+        <Row align="middle">
+          <Col className="logo-wrap" xs={{span:4, offset:1}} md={{span:1, offset:1}}>
+            <img src={logo} alt="logo" className="logo"/>
+          </Col>
+          <Col className="name-wrap"  xs={0} md={{span:4, offset:0}} lg={{span:3, offset:0}}>
+            驾驶事件记录器
+          </Col>
+          <Col className="menu-wrap"  xs={18} md={{span:17, offset:0}} lg={{span:18, offset:0}}>
+            <Menu
+              selectedKeys={selectedPageId}
+              theme="dark"
+              mode="horizontal"
+              className="menu"
+              onClick={e => changeSelectedPageId(e.key)}
+            >
+              {this.renderMenu(Pages)}
+            </Menu>
+          </Col>
+        </Row>
       </Header>
     );
   }
