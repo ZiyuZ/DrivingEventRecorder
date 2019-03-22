@@ -4,13 +4,13 @@ import {
   configure,
   computed,
   runInAction,
-  reaction
+  reaction, toJS
 } from "mobx";
 import backendConfig from "../config/backendConfig";
 import Axios from "../utils/axios";
 import dayjs from "dayjs";
 
-configure({ enforceActions: "always" });
+configure({enforceActions: "always"});
 
 export default class EventDataViewModel {
   constructor(rootStore) {
