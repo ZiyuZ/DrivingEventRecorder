@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/ini.v1"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -26,9 +27,6 @@ type config struct {
 	Log        bool   `json:"log"`
 	LogPath    string `json:"log_path"`
 }
-
-//func checkFilePath(in string) string {
-//}
 
 func checkDirPath(in string) string {
 	pathInfo, err := os.Stat(in)
@@ -134,11 +132,32 @@ func connectDB() *sqlx.DB {
 }
 
 func callBrowser(ifCallBrowser bool) {
+	fmt.Printf("Please visit \"http://localhost:%v\" in your browser.\n", C.ServerPort)
+	fmt.Printf("Visit \"http://%v:%v for other terminals in the LAN.\n\n", GetIntranetIp(), C.ServerPort)
 	if ifCallBrowser {
-		err := exec.Command("cmd", "/c start http://localhost:5000").Start()
+		cmd := fmt.Sprintf("/c start http://localhost:%v", C.ServerPort)
+		err := exec.Command("cmd", cmd).Start()
 		if err != nil {
 			return
 		}
 	}
-	fmt.Printf("Please open \"http://localhost:%v\" in your browser.\n", C.ServerPort)
+}
+
+func GetIntranetIp() string {
+	addrs, err := net.InterfaceAddrs()
+
+	if err != nil {
+		E.Logger.Error(err)
+		return "Unknown"
+	}
+
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return ipnet.IP.String()
+			}
+		}
+	}
+	E.Logger.Error("Unable to obtain legal LAN IP. Please check your network.")
+	return "Unknown"
 }
