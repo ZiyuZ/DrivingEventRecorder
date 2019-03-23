@@ -8,7 +8,7 @@ export default class Axios {
       axios({
         url: options.url,
         method: options.method,
-        baseURL: backendConfig.backendApi,
+        baseURL: options.baseURL || backendConfig.backendApi,
         timeout: 3000,
         params: options.params || "",
         data: options.data || "",

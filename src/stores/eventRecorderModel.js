@@ -6,12 +6,12 @@ import {
   runInAction,
   toJS
 } from "mobx";
-import { notification } from "antd";
+import {notification} from "antd";
 import Axios from "../utils/axios";
 import dayjs from "dayjs";
 import backendConfig from "../config/backendConfig";
 
-configure({ enforceActions: "always" });
+configure({enforceActions: "always"});
 
 export default class EventRecorderModel {
   constructor(rootStore) {
@@ -77,7 +77,7 @@ export default class EventRecorderModel {
   handleEventAddButtonClicked = event_id => {
     this.updateThisEvent({
       event_id,
-      start_timestamp: dayjs().unix()
+      start_timestamp: this.rootStore.VideoBasedRecorder.realTime.unix() || dayjs().unix()
     });
     this.setModalVisible(true);
   };
@@ -121,7 +121,7 @@ export default class EventRecorderModel {
   };
 
   @action handleCodeChange = (group_type, group_id, value) => {
-    const { thisEvent } = this;
+    const {thisEvent} = this;
     switch (group_type) {
       case "r":
         thisEvent.event_code[group_id - 1] = value;
@@ -153,7 +153,7 @@ export default class EventRecorderModel {
   @action handleSubmit = index => {
     const targetElement = toJS(this.staging[index]);
     // processing element
-    targetElement.stop_timestamp = dayjs().unix();
+    targetElement.stop_timestamp = this.rootStore.VideoBasedRecorder.realTime.unix() || dayjs().unix();
     targetElement.event_code = targetElement.event_code.join(",");
     if (!targetElement.description) {
       targetElement.description = "";

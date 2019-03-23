@@ -1,11 +1,112 @@
-import React, { Component } from "react";
-import { Card } from "antd";
+import React, {Component} from "react";
+import {
+  Card,
+  Row,
+  Col,
+  Input,
+  Button,
+  Statistic,
+  DatePicker,
+  Select
+} from "antd";
+import ReactPlayer from "react-player";
+import {inject, observer} from "mobx-react";
+import "./index.less";
+import EventRecorder from "../../components/EventRecorder";
 
+@inject("store")
+@observer
 export default class VideoBasedRecorder extends Component {
+
+  thisStore = this.props.store.VideoBasedRecorder;
+
+  componentDidMount() {
+    this.thisStore.fetchVideoList();
+  }
+
+  renderVideoListItem = () => {
+    return this.thisStore.videoList.map((videoName) => (
+      <Select.Option value={videoName} key={videoName}>{videoName}</Select.Option>
+    ))
+  };
+
+  renderVideoList = () => {
+    const {videoList, videoProps} = this.thisStore;
+    if (!videoList) {
+      return <Select
+        placeholder="Loading"
+        disabled
+        className="video-list-select"
+      />
+    } else {
+      return <Select
+        showSearch
+        disabled={videoProps.isFrozen}
+        placeholder="Select a video"
+        optionFilterProp="children"
+        onChange={(value) => {
+          this.thisStore.updateVideoProp({key: "name", value})
+        }}
+        filterOption={
+          (input, option) =>
+            option.props.children
+              .toLowerCase().indexOf(input.toLowerCase()) >= 0
+        }
+        className="video-list-select"
+      >
+        {this.renderVideoListItem()}
+      </Select>
+    }
+  };
+
   render() {
+    const {
+      videoProps,
+      playerProps,
+      updateVideoProp,
+      loadVideo,
+      releaseVideo,
+      realTimeString
+    } = this.thisStore;
     return (
       <Card title="视频事件记录" className="main card-wrap">
-        Hello, here is VideoBasedRecorder.
+        <Row gutter={16} className="video-meta-wrap">
+          <Col span={6}>
+            {this.renderVideoList()}
+          </Col>
+          <Col span={8}>
+            <DatePicker
+              showTime
+              disabled={videoProps.isFrozen}
+              placeholder="Video Start Date/Time"
+              onChange={(time) => updateVideoProp({
+                key: "baseTime",
+                value: time
+              })}
+              value={videoProps.baseTime}
+            />
+          </Col>
+          <Col span={4}>
+            {videoProps.isFrozen ?
+              <Button type="danger" onClick={releaseVideo}>
+                Stop Recording
+              </Button> :
+              <Button type="primary" onClick={loadVideo}>
+                Load Video
+              </Button>}
+          </Col>
+          {/*<Col span={8}>*/}
+            {/*<Statistic*/}
+              {/*title="Real Time"*/}
+              {/*value={realTimeString}*/}
+              {/*className="statistic-value-wrap"*/}
+            {/*/>*/}
+          {/*</Col>*/}
+        </Row>
+        <ReactPlayer {...playerProps}/>
+        <div className="event-recorder-wrap">
+          <EventRecorder/>
+        </div>
       </Card>
     );
   }

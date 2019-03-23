@@ -37,11 +37,11 @@ export default class Home extends Component {
   render() {
     return (
       <Card title="首页" className="main card-wrap home-page-card">
-        <Alert
-          message="注意: 目前只有 实时事件 和 数据视图 模块被实现."
-          type="warning"
-          closable
-        />
+        {/*<Alert*/}
+          {/*message="注意: 视频事件 模块尚未被完全实现."*/}
+          {/*type="warning"*/}
+          {/*closable*/}
+        {/*/>*/}
         <div className="link-button-group">
           {pagesMetaInfo.map(this.renderButton)}
         </div>

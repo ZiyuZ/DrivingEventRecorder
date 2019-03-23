@@ -1,6 +1,6 @@
-import React, { Component } from "react";
-import { inject, observer } from "mobx-react";
-import { Col, Row, Spin, Empty } from "antd";
+import React, {Component} from "react";
+import {inject, observer} from "mobx-react";
+import {Col, Row, Spin, Empty} from "antd";
 import EventSelector from "./eventSelector";
 import StagingArea from "./stagingArea";
 import EventDetailModal from "./eventDetailModal";
@@ -16,17 +16,17 @@ export default class EventRecorder extends Component {
   render() {
     return this.props.store.EventDefinition.eventDefinition ? (
       <Row className="event-recorder">
-        <Col span={12}>
-          <EventSelector />
+        <Col xs={24} sm={12}>
+          <EventSelector/>
         </Col>
-        <Col span={12}>
-          <StagingArea />
+        <Col xs={24} sm={12}>
+          <StagingArea/>
         </Col>
-        <EventDetailModal />
+        <EventDetailModal/>
       </Row>
     ) : (
       <Spin tip="Loading..." className="events-wrap">
-        <Empty />
+        <Empty/>
       </Spin>
     );
   }
