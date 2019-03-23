@@ -75,9 +75,10 @@ export default class EventRecorderModel {
 
   @action
   handleEventAddButtonClicked = event_id => {
+    const {realTime} = this.rootStore.VideoBasedRecorder;
     this.updateThisEvent({
       event_id,
-      start_timestamp: this.rootStore.VideoBasedRecorder.realTime.unix() || dayjs().unix()
+      start_timestamp: (realTime || dayjs()).unix()
     });
     this.setModalVisible(true);
   };
@@ -152,8 +153,9 @@ export default class EventRecorderModel {
 
   @action handleSubmit = index => {
     const targetElement = toJS(this.staging[index]);
+    const {realTime} = this.rootStore.VideoBasedRecorder;
     // processing element
-    targetElement.stop_timestamp = this.rootStore.VideoBasedRecorder.realTime.unix() || dayjs().unix();
+    targetElement.stop_timestamp = (realTime || dayjs()).unix();
     targetElement.event_code = targetElement.event_code.join(",");
     if (!targetElement.description) {
       targetElement.description = "";
