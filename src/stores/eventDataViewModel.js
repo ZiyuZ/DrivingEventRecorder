@@ -114,4 +114,16 @@ export default class EventDataViewModel {
       this.fetchEventData();
     }
   };
+
+  @action deleteEventById = (id) => {
+    Axios.ajax({
+      url: backendConfig.eventApi,
+      method: "DELETE",
+      params: {id}
+    }).then((res) => {
+      runInAction(() => {
+        this.eventData = this.eventData.filter(event => event.key !== id);
+      })
+    });
+  }
 }
