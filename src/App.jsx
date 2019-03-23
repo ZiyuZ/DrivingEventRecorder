@@ -17,14 +17,17 @@ class App extends Component {
             </Col>
           </Row>
           <Footer className="footer">
-            Created by{" "}
+            Developed by&nbsp;
             <a href="mailto:zhangziyu@seu.edu.cn">
               zhzy
               <span role="img" aria-label="Fish">
                 🐟
               </span>
-            </a>{" "}
-            @ SEU
+            </a>
+            &nbsp;@&nbsp;
+            <a href="//www.seu.edu.cn" target="_blank">
+              <img src="/seu_logo.png" className="seu-logo"/>
+            </a>
           </Footer>
         </Layout>
         <DevTools />
