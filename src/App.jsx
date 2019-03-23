@@ -3,6 +3,7 @@ import "./style/App.less";
 import {Col, Layout, Row} from "antd";
 import Header from "./components/Header";
 import DevTools from "mobx-react-devtools";
+import seuLogo from "./static/seu_logo.png";
 
 class App extends Component {
   render() {
@@ -26,7 +27,7 @@ class App extends Component {
             </a>
             &nbsp;@&nbsp;
             <a href="//www.seu.edu.cn" target="_blank">
-              <img src="/seu_logo.png" className="seu-logo"/>
+              <img src={seuLogo} className="seu-logo" alt="seu-logo"/>
             </a>
           </Footer>
         </Layout>
