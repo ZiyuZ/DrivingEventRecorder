@@ -37,12 +37,14 @@ func initEcho() *echo.Echo {
 
 	// static file router
 	e.Static("/", C.PublicPath)
+	e.Static("/video", C.VideoPath)
 
 	// api router
 	api := e.Group("/api")
 	{
 		api.GET("/ping", ping)
 		api.GET("/event_definition", getEventDefinition)
+		api.GET("/video_list", getVideoList)
 
 		api.GET("/event", getEvent)
 		api.POST("/event", postEvent)

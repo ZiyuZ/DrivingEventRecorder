@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -22,6 +23,7 @@ type config struct {
 
 	DatabasePath string `json:"database_path"`
 	PublicPath   string `json:"public_path"`
+	VideoPath    string `json:"video_path"`
 
 	ServerPort int    `json:"server_port"`
 	Log        bool   `json:"log"`
@@ -55,7 +57,6 @@ func readConf() *config {
 		Debug:       cfg.Section("dev").Key("debug").MustBool(false),
 		CallBrowser: cfg.Section("dev").Key("call_browser").MustBool(true),
 		DatabasePath: cfg.Section("resource").Key("database_path").Validate(func(databasePath string) string {
-
 			pathInfo, err := os.Stat(databasePath)
 			if os.IsNotExist(err) {
 				fmt.Printf("Database file not found. Attempting to create database: %v\n", databasePath)
@@ -81,6 +82,7 @@ func readConf() *config {
 			return databasePath
 		}),
 		PublicPath: cfg.Section("resource").Key("public_path").Validate(checkDirPath),
+		VideoPath:  cfg.Section("resource").Key("video_path").Validate(checkDirPath),
 		ServerPort: cfg.Section("server").Key("port").MustInt(5000),
 		Log:        logFlag,
 		LogPath: cfg.Section("server").Key("log_path").Validate(func(in string) string {
@@ -102,6 +104,7 @@ func readConf() *config {
 		{"CallBrowser", strconv.FormatBool(c.CallBrowser)},
 		{"DatabasePath", c.DatabasePath},
 		{"PublicPath", c.PublicPath},
+		{"VideoPath", c.VideoPath},
 		{"ServerPort", strconv.Itoa(c.ServerPort)},
 		{"Log", strconv.FormatBool(c.Log)},
 		{"LogPath", c.LogPath},
@@ -160,4 +163,20 @@ func GetIntranetIp() string {
 	}
 	E.Logger.Error("Unable to obtain legal LAN IP. Please check your network.")
 	return "Unknown"
+}
+
+func GetFileListByPath() (fileList []string, err error) {
+	dirPath := C.VideoPath
+	err = filepath.Walk(dirPath, func(path string, f os.FileInfo, err error) error {
+		if f != nil && !f.IsDir() && strings.Contains(path, ".mp4") {
+			_, file := filepath.Split(path)
+			fileList = append(fileList, file)
+		}
+		return nil
+	})
+	if err != nil {
+		E.Logger.Error("fail")
+		return nil, err
+	}
+	return
 }
