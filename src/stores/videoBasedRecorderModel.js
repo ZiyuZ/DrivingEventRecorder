@@ -101,12 +101,22 @@ export default class VideoBasedRecorderModel {
         description: `Start playing video to record events.`
       })
     },
-    onPause: () => {
+    onPause: (e) => {
+      this.updateVideoProp({
+        key: 'playbackTime',
+        value: e.target.currentTime
+      });
     },
     onEnded: () => {
     },
     onError: (err) => {
       console.log(err)
+    },
+    onSeek: (playbackTime) => {
+      this.updateVideoProp({
+        key: 'playbackTime',
+        value: playbackTime
+      });
     }
   }
 
