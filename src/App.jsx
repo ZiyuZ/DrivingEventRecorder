@@ -2,7 +2,6 @@ import React, {Component} from "react";
 import "./style/App.less";
 import {Col, Layout, Row} from "antd";
 import Header from "./components/Header";
-import DevTools from "mobx-react-devtools";
 import seuLogo from "./static/seu_logo.png";
 
 class App extends Component {
@@ -31,7 +30,7 @@ class App extends Component {
             </a>
           </Footer>
         </Layout>
-        <DevTools />
+        {process.env.NODE_ENV === 'development' ? require("mobx-react-devtools").default : null}
       </div>
     );
   }
