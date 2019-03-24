@@ -60,7 +60,7 @@ export default class StagingArea extends Component {
       <List.Item
         actions={this.renderActions(
           index,
-          dayjs.unix(item.start_timestamp).format("HH:mm:ss")
+          dayjs.unix(item.start_timestamp).format("YYYY-MM-DD HH:mm:ss")
         )}
       >
         {this.renderItemMeta(item)}
