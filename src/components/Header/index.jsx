@@ -10,10 +10,14 @@ import "./index.less";
 @observer
 export default class Header extends Component {
 
+  componentDidMount() {
+    this.props.store.GlobalStore.initSelectedPageId();
+  }
+
   renderMenu = data => {
     return data.map(item => {
       return (
-        <Menu.Item key={item.id}>
+        <Menu.Item key={item.pageUrl}>
           <NavLink to={item.pageUrl}>
             <Icon type={item.icon}/>
             <span>{item.pageTitle}</span>
