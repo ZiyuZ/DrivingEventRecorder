@@ -3,8 +3,7 @@ import {
   action,
   configure,
   computed,
-  runInAction,
-  reaction, toJS
+  runInAction
 } from "mobx";
 import backendConfig from "../config/backendConfig";
 import Axios from "../utils/axios";

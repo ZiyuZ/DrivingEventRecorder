@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import { Link } from "react-router-dom";
 import { inject, observer } from "mobx-react";
-import { Card, Button, Alert } from "antd";
+import { Card, Button } from "antd";
 import pagesMetaInfo from "../../config/pagesMetaInfo";
 import "./index.less";
 @inject("store")
