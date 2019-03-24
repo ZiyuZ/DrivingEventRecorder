@@ -87,9 +87,9 @@ export default class EventRecorderModel {
   @observable modalVisible = false;
 
   @action setModalVisible = modalVisible => {
-    if (!modalVisible) {
-      this.resetThisEvent();
-    }
+    if (this.rootStore.VideoBasedRecorder.playerProps.url)
+      this.rootStore.VideoBasedRecorder.switchPlayingWithModalVisible(modalVisible);
+    if (!modalVisible) this.resetThisEvent();
     this.modalVisible = modalVisible;
   };
 

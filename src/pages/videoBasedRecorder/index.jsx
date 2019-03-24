@@ -3,11 +3,9 @@ import {
   Card,
   Row,
   Col,
-  Input,
   Button,
-  Statistic,
   DatePicker,
-  Select
+  Select, InputNumber
 } from "antd";
 import ReactPlayer from "react-player";
 import {inject, observer} from "mobx-react";
@@ -66,11 +64,11 @@ export default class VideoBasedRecorder extends Component {
       updateVideoProp,
       loadVideo,
       releaseVideo,
-      realTimeString
+      updatePlaybackRate
     } = this.thisStore;
     return (
       <Card title="视频事件记录" className="main card-wrap">
-        <Row gutter={16} className="video-meta-wrap">
+        <Row gutter={16} className="options-wrap">
           <Col span={6}>
             {this.renderVideoList()}
           </Col>
@@ -78,12 +76,13 @@ export default class VideoBasedRecorder extends Component {
             <DatePicker
               showTime
               disabled={videoProps.isFrozen}
-              placeholder="Video Start Date/Time"
+              placeholder="Set video start time"
               onChange={(time) => updateVideoProp({
                 key: "baseTime",
                 value: time
               })}
               value={videoProps.baseTime}
+              className="date-pick"
             />
           </Col>
           <Col span={4}>
@@ -95,17 +94,20 @@ export default class VideoBasedRecorder extends Component {
                 Load Video
               </Button>}
           </Col>
-          {/*<Col span={8}>*/}
-            {/*<Statistic*/}
-              {/*title="Real Time"*/}
-              {/*value={realTimeString}*/}
-              {/*className="statistic-value-wrap"*/}
-            {/*/>*/}
-          {/*</Col>*/}
+          <Col span={5}>
+            <span>Playback Rate:&nbsp;&nbsp;</span>
+            <InputNumber
+              addonBefore="Rate"
+              min={0.1} max={5.0} step={0.1}
+              value={playerProps.playbackRate}
+              className="playback-rate-input"
+              onChange={value => updatePlaybackRate(value)}
+            />
+          </Col>
         </Row>
         <ReactPlayer {...playerProps}/>
         <div className="event-recorder-wrap">
-          <EventRecorder/>
+          {playerProps.url ? <EventRecorder/> : null}
         </div>
       </Card>
     );

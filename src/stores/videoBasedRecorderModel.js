@@ -31,12 +31,11 @@ export default class VideoBasedRecorderModel {
     isFrozen: false,
   };
 
-  @action updateVideoProp = (videoProp) => {
+  @action updateVideoProp = videoProp => {
     this.videoProps[videoProp.key] = videoProp.value;
   };
 
   @action loadVideo = () => {
-    console.log(this.videoProps);
     const {name, baseTime} = this.videoProps;
     if (!name || !baseTime) {
       notification.error({
@@ -59,6 +58,35 @@ export default class VideoBasedRecorderModel {
     });
   };
 
+  @action updatePlaybackRate = value => {
+    const playbackRate = parseFloat(value);
+    if (isNaN(playbackRate) || playbackRate < 0.1 || playbackRate > 5.0) {
+      notification.error({
+        message: "Value Error",
+        description: `Invalid playback rate : ${value}. It should be a number between 0.1 and 5.0.`
+      });
+      this.playerProps.playbackRate = 1.0;
+    } else {
+      this.playerProps.playbackRate = playbackRate;
+    }
+  };
+
+  @action switchPlaying = value => {
+    // console.log("switch playing to: " + value);
+    this.playerProps.playing = value === undefined ? !this.playerProps.playing : value;
+  };
+
+  @observable lastPlayingState = null;
+  @action switchPlayingWithModalVisible = modalVisible => {
+    if (modalVisible) {
+      this.lastPlayingState = this.playerProps.playing;
+      this.switchPlaying(false);
+    } else {
+      this.switchPlaying(this.lastPlayingState);
+      this.lastPlayingState = null;
+    }
+  };
+
   @computed get realTime() {
     const {baseTime, playbackTime} = this.videoProps;
     return baseTime && playbackTime ? dayjs(baseTime).add(playbackTime, 's') : null;
@@ -74,7 +102,7 @@ export default class VideoBasedRecorderModel {
     playing: false,
     loop: false,
     controls: true,
-    volume: 0.5,
+    volume: 1.0,
     muted: false,
     playbackRate: 1,
     // width: "100%",
@@ -87,6 +115,7 @@ export default class VideoBasedRecorderModel {
     onStart: () => {
     },
     onPlay: () => {
+      this.switchPlaying(true);
     },
     onProgress: (e) => {
       this.updateVideoProp({
@@ -102,15 +131,17 @@ export default class VideoBasedRecorderModel {
       })
     },
     onPause: (e) => {
-      this.updateVideoProp({
-        key: 'playbackTime',
-        value: e.target.currentTime
+      runInAction(() => {
+        this.updateVideoProp({
+          key: 'playbackTime',
+          value: e.target.currentTime
+        });
       });
     },
     onEnded: () => {
     },
     onError: (err) => {
-      console.log(err)
+      console.log("Error: " + err)
     },
     onSeek: (playbackTime) => {
       this.updateVideoProp({
