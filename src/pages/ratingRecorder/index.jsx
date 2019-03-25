@@ -5,12 +5,12 @@ import "./index.less";
 
 @inject("store")
 @observer
-export default class PassengerComfortLevelRecorder extends Component {
+export default class RatingRecorder extends Component {
 
-  thisStore = this.props.store.PassengerComfortLevel;
+  thisStore = this.props.store.RatingRecorder;
 
   renderIcon = () => {
-    const {type, color} = this.thisStore.passengerComfortType;
+    const {type, color} = this.thisStore.ratingType;
     return <Icon
       type={type}
       theme="twoTone"
@@ -20,26 +20,26 @@ export default class PassengerComfortLevelRecorder extends Component {
 
   renderRate = () => {
     const {
-      passengerComfortType,
-      updatePassengerComfortLevel,
+      ratingType,
+      updateRatingLevel,
       totalLevelsCount,
-      passengerComfortLevel
+      ratingLevel
     } = this.thisStore;
-    const {type, color} = passengerComfortType;
+    const {type, color} = ratingType;
     return (
       <span className="rate-wrap">
         <Rate
-          onChange={updatePassengerComfortLevel}
-          onHoverChange={updatePassengerComfortLevel}
+          onChange={updateRatingLevel}
+          onHoverChange={updateRatingLevel}
           // defaultValue={5}
           count={totalLevelsCount}
-          value={passengerComfortLevel}
+          value={ratingLevel}
           style={{color}}
           character={<Icon type={type}/>}
           allowClear={false}
         />
         {
-          <span className="ant-rate-text">{`Current PCL: ${passengerComfortLevel}`}</span>
+          <span className="ant-rate-text">{`Current PCL: ${ratingLevel}`}</span>
         }
       </span>
     );
@@ -49,34 +49,34 @@ export default class PassengerComfortLevelRecorder extends Component {
     const {
       maxLevel,
       minLevel,
-      passengerComfortLevel,
-      updatePassengerComfortLevel,
-      postPassengerComfortLevel,
-      lastPassengerComfortLevel
+      ratingLevel,
+      updateRatingLevel,
+      postRatingLevel,
+      lastRatingLevel
     } = this.thisStore;
 
     return (
       <Card title="乘客舒适度等级记录" className="main card-wrap">
         <Card title="Comfort Level" type="inner" className="children-card">
-          <Row className="comfort-level-wrap" type="flex" justify="space-around" align="middle">
-            <Col span={16} offset={1}>
-              <Slider
-                max={maxLevel}
-                min={minLevel}
-                onChange={updatePassengerComfortLevel}
-                defaultValue={5}
-                value={passengerComfortLevel}
-              />
-            </Col>
-            <Col span={4} offset={1} className="comfort-level-icon-wrap">
-              {this.renderIcon()}
-            </Col>
-          </Row>
+          {/*<Row className="comfort-level-wrap" type="flex" justify="space-around" align="middle">*/}
+            {/*<Col span={16} offset={1}>*/}
+              {/*<Slider*/}
+                {/*max={maxLevel}*/}
+                {/*min={minLevel}*/}
+                {/*onChange={updateRatingLevel}*/}
+                {/*defaultValue={5}*/}
+                {/*value={ratingLevel}*/}
+              {/*/>*/}
+            {/*</Col>*/}
+            {/*<Col span={4} offset={1} className="comfort-level-icon-wrap">*/}
+              {/*{this.renderIcon()}*/}
+            {/*</Col>*/}
+          {/*</Row>*/}
           <div className="comfort-level-submit-button-wrap">
             <Button
               type="primary"
               block
-              onClick={postPassengerComfortLevel}
+              onClick={postRatingLevel}
             >
               Submit
             </Button>
@@ -88,7 +88,7 @@ export default class PassengerComfortLevelRecorder extends Component {
             <Button
               type="primary"
               block
-              onClick={postPassengerComfortLevel}
+              onClick={postRatingLevel}
             >
               Submit
             </Button>
@@ -97,7 +97,7 @@ export default class PassengerComfortLevelRecorder extends Component {
         <Card title="Statistics" type="inner" className="children-card">
           <Statistic
             title="Last PCL"
-            value={lastPassengerComfortLevel}
+            value={lastRatingLevel}
             prefix="Level: "
             // valueStyle={{marginLeft: 30}}
           />

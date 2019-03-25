@@ -20,9 +20,9 @@ export default [
   },
   {
     id: 3,
-    pageTitle: "乘客舒适等级",
-    pageUrl: "/recorder/passenger_comfort_level",
-    icon: "smile"
+    pageTitle: "评分",
+    pageUrl: "/recorder/rating",
+    icon: "team"
   },
   {
     id: 4,

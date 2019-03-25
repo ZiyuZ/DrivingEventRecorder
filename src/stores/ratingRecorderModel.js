@@ -5,19 +5,19 @@ import dayjs from "dayjs";
 
 configure({enforceActions: "always"});
 
-export default class PassengerComfortLevelRecorderModel {
+export default class RatingRecorderModel {
   constructor(rootStore) {
     this.rootStore = rootStore;
   }
 
-  @observable passengerComfortLevel = 5;
-  @observable lastPassengerComfortLevel = 5;
+  @observable ratingLevel = 5;
+  @observable lastRatingLevel = 5;
 
-  @computed get passengerComfortType() {
-    if (this.passengerComfortLevel < 4) {
+  @computed get ratingType() {
+    if (this.ratingLevel < 4) {
       return {type: "frown", color: "#f5222d"}
     }
-    if (this.passengerComfortLevel > 6) {
+    if (this.ratingLevel > 6) {
       return {type: "smile", color: "#52c41a"}
     }
     return {type: "meh", color: "#faad14"}
@@ -30,23 +30,23 @@ export default class PassengerComfortLevelRecorderModel {
     return this.maxLevel - this.minLevel + 1;
   }
 
-  @action updatePassengerComfortLevel = (newLevel) => {
+  @action updateRatingLevel = (newLevel) => {
     if (!newLevel) return;
-    this.passengerComfortLevel = newLevel;
+    this.ratingLevel = newLevel;
   };
 
-  @action postPassengerComfortLevel = () => {
+  @action postRatingLevel = () => {
     const data = {
       timestamp: dayjs().unix(),
-      comfort_level: this.passengerComfortLevel
+      comfort_level: this.ratingLevel
     };
     Axios.ajax({
-      url: backendConfig.passengerComfortLevelApi,
+      url: backendConfig.ratingLevelApi,
       method: "POST",
       data
     }).then(() => {
         runInAction(() => {
-          this.lastPassengerComfortLevel = this.passengerComfortLevel;
+          this.lastRatingLevel = this.ratingLevel;
         })
       }
     ).catch(res => {
