@@ -85,42 +85,42 @@ func deleteEvent(c echo.Context) error {
 	return c.JSON(http.StatusOK, &Response{0, "Delete event successfully", nil})
 }
 
-func getComfortLevel(c echo.Context) error {
-	data, err := queryComfortLevel()
+func getRating(c echo.Context) error {
+	data, err := queryRating()
 	if err != nil {
-		message := fmt.Sprintf("Failed to read Passanger Comfort Level: %v", err)
+		message := fmt.Sprintf("Failed to read Ratings: %v", err)
 		E.Logger.Error(message)
 		return c.JSON(http.StatusInternalServerError, &Response{1, message, nil})
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Get Passanger Comfort Level successfully", data})
+	return c.JSON(http.StatusOK, &Response{0, "Get Ratings successfully", data})
 }
 
-func postComfortLevel(c echo.Context) error {
-	pcl := new(PassengerComfortLevel)
-	if err := c.Bind(pcl); err != nil {
-		message := fmt.Sprintf("Bad Passanger Comfort Level structure: %v", err)
+func postRating(c echo.Context) error {
+	rating := new(Rating)
+	if err := c.Bind(rating); err != nil {
+		message := fmt.Sprintf("Bad Rating structure: %v", err)
 		E.Logger.Error(message)
 		return c.JSON(http.StatusInternalServerError, &Response{2, message, nil})
 	}
-	if err := insertComfortLevel(pcl); err != nil {
-		message := fmt.Sprintf("Failed to insert Passanger Comfort Level: %v", err)
+	if err := insertRating(rating); err != nil {
+		message := fmt.Sprintf("Failed to insert Rating: %v", err)
 		E.Logger.Error(message)
 		return c.JSON(http.StatusInternalServerError, &Response{1, message, nil})
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Add Passenger Comfort Level successfully", nil})
+	return c.JSON(http.StatusOK, &Response{0, "Add Rating successfully", nil})
 }
 
-func deleteComfortLevel(c echo.Context) error {
+func deleteRating(c echo.Context) error {
 	id, err := strconv.Atoi(c.QueryParam("id"))
 	if err != nil {
 		message := fmt.Sprintf("Unknown id (%v): %v.", id, err)
 		E.Logger.Error(message)
 		return c.JSON(http.StatusBadRequest, &Response{2, message, nil})
 	}
-	if err := deleteComfortLevelByID(id); err != nil {
-		message := fmt.Sprintf("Failed to delete Passenger Comfort Level (id=%v): %v.", id, err)
+	if err := deleteRatingByID(id); err != nil {
+		message := fmt.Sprintf("Failed to delete Rating (id=%v): %v.", id, err)
 		E.Logger.Error(message)
 		return c.JSON(http.StatusBadRequest, &Response{2, message, nil})
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Delete Passenger Comfort Level successfully", nil})
+	return c.JSON(http.StatusOK, &Response{0, "Delete Rating successfully", nil})
 }

@@ -50,9 +50,9 @@ func initEcho() *echo.Echo {
 		api.POST("/event", postEvent)
 		api.DELETE("/event", deleteEvent)
 
-		api.GET("/passenger_comfort_level", getComfortLevel)
-		api.POST("/passenger_comfort_level", postComfortLevel)
-		api.DELETE("/passenger_comfort_level", deleteComfortLevel)
+		api.GET("/rating", getRating)
+		api.POST("/rating", postRating)
+		api.DELETE("/rating", deleteRating)
 	}
 
 	fmt.Println("Router initialized.")

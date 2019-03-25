@@ -4,7 +4,7 @@ type (
 	// Recorded event struct in driving behavior experiment
 	Event struct {
 		ID             int    `json:"id"`
-		EventID      int    `json:"event_id"`
+		EventID        int    `json:"event_id"`
 		EventCode      string `json:"event_code"`
 		StartTimestamp int    `json:"start_timestamp"`
 		StopTimestamp  int    `json:"stop_timestamp"`
@@ -33,10 +33,12 @@ type (
 		EventOptionGroups []EventOptionGroup `json:"event_option_groups"`
 	}
 
-	PassengerComfortLevel struct {
-		ID           int `json:"id"`
-		Timestamp    int `json:"timestamp"`
-		ComfortLevel int `json:"comfort_level"`
+	Rating struct {
+		ID          int    `json:"id"`
+		Type        int    `json:"type"`
+		Timestamp   int    `json:"timestamp"`
+		RatingLevel int    `json:"rating_level"`
+		Description string `json:"description"`
 	}
 )
 
@@ -165,8 +167,8 @@ func deleteEventById(id int) error {
 	return err
 }
 
-func queryComfortLevel() (pcls []PassengerComfortLevel, err error) {
-	querySchema := "SELECT id, timestamp, comfort_level FROM passenger_comfort_level"
+func queryRating() (ratings []Rating, err error) {
+	querySchema := "SELECT id, type, timestamp, rating_level, description FROM rating"
 	rows, err := DB.Query(querySchema)
 	if err != nil {
 		return nil, err
@@ -178,24 +180,24 @@ func queryComfortLevel() (pcls []PassengerComfortLevel, err error) {
 		}
 	}()
 	for rows.Next() {
-		var pcl PassengerComfortLevel
-		err = rows.Scan(&pcl.ID, &pcl.Timestamp, &pcl.ComfortLevel)
+		var rating Rating
+		err = rows.Scan(&rating.ID, &rating.Type, &rating.Timestamp, &rating.RatingLevel, &rating.Description)
 		if err != nil {
 			return nil, err
 		}
-		pcls = append(pcls, pcl)
+		ratings = append(ratings, rating)
 	}
 	return
 }
 
-func insertComfortLevel(pcl *PassengerComfortLevel) error {
-	insertSchema := "INSERT INTO passenger_comfort_level (timestamp, comfort_level) VALUES ($1, $2)"
-	_, err := DB.Exec(insertSchema, pcl.Timestamp, pcl.ComfortLevel)
+func insertRating(rating *Rating) error {
+	insertSchema := "INSERT INTO rating (type, timestamp, rating_level, description) VALUES ($1, $2, $3, $4)"
+	_, err := DB.Exec(insertSchema, rating.Type, rating.Timestamp, rating.RatingLevel, rating.Description)
 	return err
 }
 
-func deleteComfortLevelByID(id int) error {
-	deleteSchema := "DELETE FROM passenger_comfort_level WHERE id = $1"
+func deleteRatingByID(id int) error {
+	deleteSchema := "DELETE FROM rating WHERE id = $1"
 	_, err := DB.Exec(deleteSchema, id)
 	return err
 }
