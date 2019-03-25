@@ -19,7 +19,7 @@ export default class VideoBasedRecorderModel {
       method: "GET"
     }).then((res) => {
       runInAction(() => {
-        this.videoList = res.data;
+        this.videoList = res.data || [];
       })
     })
   };

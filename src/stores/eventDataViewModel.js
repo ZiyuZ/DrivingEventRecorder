@@ -8,6 +8,7 @@ import {
 import backendConfig from "../config/backendConfig";
 import Axios from "../utils/axios";
 import dayjs from "dayjs";
+import utils from "../utils/utils"
 
 configure({enforceActions: "always"});
 
@@ -74,9 +75,8 @@ export default class EventDataViewModel {
     } = event;
     //parse event code
     const thisEventDefinition = this.findEventDefinitionByEventId(event_id);
-    const thisEventOptions = thisEventDefinition.event_option_groups
-      .map(value => value.event_options)
-      .flat();
+    const thisEventOptions = utils.flatten(thisEventDefinition.event_option_groups
+      .map(value => value.event_options));
     const eventCodeList = event_code.split(",").map(code => {
       code = parseInt(code);
       return thisEventOptions.find(value => value.option_id === code)

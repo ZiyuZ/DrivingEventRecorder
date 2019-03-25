@@ -10,6 +10,7 @@ import {notification} from "antd";
 import Axios from "../utils/axios";
 import dayjs from "dayjs";
 import backendConfig from "../config/backendConfig";
+import utils from "../utils/utils"
 
 configure({enforceActions: "always"});
 
@@ -115,7 +116,7 @@ export default class EventRecorderModel {
       return;
     }
     runInAction(() => {
-      thisEvent.event_code = thisEvent.event_code.flat().filter(value => value);
+      thisEvent.event_code = utils.flatten(thisEvent.event_code).filter(value => value);
       addThisEventIntoStaging(thisEvent);
       setModalVisible(false);
     });

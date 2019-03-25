@@ -1,7 +1,8 @@
-import React, { Component } from "react";
-import { inject, observer } from "mobx-react";
+import React, {Component} from "react";
+import {inject, observer} from "mobx-react";
 import dayjs from "dayjs";
-import { List, Button, Popconfirm, Card, Empty, Icon, Tooltip } from "antd";
+import {List, Button, Popconfirm, Card, Empty, Icon, Tooltip} from "antd";
+import utils from "../../utils/utils"
 
 @inject("store")
 @observer
@@ -9,7 +10,7 @@ export default class StagingArea extends Component {
   thisStore = this.props.store.EventRecorder;
 
   renderActions = (index, time) => {
-    const { handleSubmit, deleteElementFromStaging } = this.thisStore;
+    const {handleSubmit, deleteElementFromStaging} = this.thisStore;
     return [
       time,
       <Button
@@ -25,17 +26,16 @@ export default class StagingArea extends Component {
         okText="Yes"
         cancelText="No"
       >
-        <Button type="danger" shape="circle" icon="delete" />
+        <Button type="danger" shape="circle" icon="delete"/>
       </Popconfirm>
     ];
   };
 
   renderItemMeta = item => {
-    const { findEventDefinitionByEventId } = this.thisStore;
+    const {findEventDefinitionByEventId} = this.thisStore;
     const itemDefinition = findEventDefinitionByEventId(item.event_id);
-    const thisEventOptions = itemDefinition.event_option_groups
-      .map(value => value.event_options)
-      .flat();
+    const thisEventOptions = utils.flatten(itemDefinition.event_option_groups
+      .map(value => value.event_options));
     return (
       <List.Item.Meta
         title={`${itemDefinition.event_id}. ${itemDefinition.description}`}
@@ -80,7 +80,7 @@ export default class StagingArea extends Component {
   };
 
   renderStaging = () => {
-    const { staging } = this.thisStore;
+    const {staging} = this.thisStore;
     return (
       <List
         size="small"
@@ -101,7 +101,7 @@ export default class StagingArea extends Component {
         bordered
         className="children-card"
       >
-        {this.thisStore.staging.length === 0 ? <Empty /> : this.renderStaging()}
+        {this.thisStore.staging.length === 0 ? <Empty/> : this.renderStaging()}
       </Card>
     );
   }

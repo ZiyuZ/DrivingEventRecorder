@@ -40,7 +40,7 @@ export default class VideoBasedRecorder extends Component {
       return <Select
         showSearch
         disabled={videoProps.isFrozen}
-        placeholder="Select a video"
+        placeholder={videoList.length === 0 ? "No videos" : "Select a video" }
         optionFilterProp="children"
         onChange={(value) => {
           this.thisStore.updateVideoProp({key: "name", value})
