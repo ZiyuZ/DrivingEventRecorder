@@ -1,4 +1,4 @@
-import {observable, action, configure, runInAction, computed} from "mobx";
+import {observable, action, configure, runInAction, computed, toJS} from "mobx";
 import Axios from "../utils/axios";
 import backendConfig from "../config/backendConfig";
 import dayjs from "dayjs";
@@ -10,43 +10,53 @@ export default class RatingRecorderModel {
     this.rootStore = rootStore;
   }
 
-  @observable ratingLevel = 5;
-  @observable lastRatingLevel = 5;
+  ratingTypeDefinition = ["PassengerComfortLevel", "DriverEvaluation", "DriverEmotion"];
+  totalLevelsCount = 9;
 
-  @computed get ratingType() {
-    if (this.ratingLevel < 4) {
-      return {type: "frown", color: "#f5222d"}
-    }
-    if (this.ratingLevel > 6) {
-      return {type: "smile", color: "#52c41a"}
-    }
-    return {type: "meh", color: "#faad14"}
-  }
-
-  minLevel = 1;
-  maxLevel = 9;
-
-  @computed get totalLevelsCount() {
-    return this.maxLevel - this.minLevel + 1;
-  }
-
-  @action updateRatingLevel = (newLevel) => {
-    if (!newLevel) return;
-    this.ratingLevel = newLevel;
+  @observable ratingLevel = {
+    passengerComfortLevel: 5,
+    driverEvaluation: 5,
+    driverEmotion: 5
+  };
+  @observable lastRatingInfo = {
+    type: null,
+    timestamp: null,
+    rating_level: null,
+    description: null
   };
 
-  @action postRatingLevel = () => {
+  getEmotionalIconByLevel = (ratingTypeName) => {
+    const thisLevel =  this.ratingLevel[ratingTypeName];
+    if (thisLevel < 4) {
+      return {icon: "frown", color: "#f5222d"}
+    }
+    if (thisLevel > 6) {
+      return {icon: "smile", color: "#52c41a"}
+    }
+    return {icon: "meh", color: "#faad14"}
+  };
+
+  @action updateRatingLevel = (ratingTypeName, newLevel) => {
+    if (!newLevel || !ratingTypeName) return;
+    this.ratingLevel[ratingTypeName] = newLevel;
+  };
+
+  @action postRatingLevel = (ratingType, ratingTypeName, description) => {
+    if (!this.ratingLevel[ratingTypeName]) return;
     const data = {
+      type: ratingType,
       timestamp: dayjs().unix(),
-      comfort_level: this.ratingLevel
+      rating_level: this.ratingLevel[ratingTypeName],
+      description
     };
+    console.log(data);
     Axios.ajax({
-      url: backendConfig.ratingLevelApi,
+      url: backendConfig.ratingApi,
       method: "POST",
       data
     }).then(() => {
         runInAction(() => {
-          this.lastRatingLevel = this.ratingLevel;
+          this.lastRatingInfo = data;
         })
       }
     ).catch(res => {

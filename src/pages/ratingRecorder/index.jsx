@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import {Card, Col, Icon, Row, Slider, Button, Rate, Statistic} from "antd";
 import {inject, observer} from "mobx-react";
 import "./index.less";
+import dayjs from "dayjs";
 
 @inject("store")
 @observer
@@ -9,99 +10,86 @@ export default class RatingRecorder extends Component {
 
   thisStore = this.props.store.RatingRecorder;
 
-  renderIcon = () => {
-    const {type, color} = this.thisStore.ratingType;
-    return <Icon
-      type={type}
-      theme="twoTone"
-      twoToneColor={color}
+  renderRator = (ratingTypeName) => {
+    const {
+      updateRatingLevel, ratingLevel, totalLevelsCount,
+      getEmotionalIconByLevel
+    } = this.thisStore;
+    const {icon, color} = getEmotionalIconByLevel(ratingTypeName);
+    return <Rate
+      onChange={(value) => updateRatingLevel(ratingTypeName, value)}
+      onHoverChange={(value) => updateRatingLevel(ratingTypeName, value)}
+      count={totalLevelsCount}
+      value={ratingLevel[ratingTypeName]}
+      style={{color}}
+      character={<Icon type={icon}/>}
+      allowClear={false}
     />
   };
 
-  renderRate = () => {
+  renderRatingCard = (ratingType, ratingTypeName) => {
     const {
-      ratingType,
-      updateRatingLevel,
-      totalLevelsCount,
-      ratingLevel
+      ratingTypeDefinition,
+      postRatingLevel,
+      ratingLevel,
     } = this.thisStore;
-    const {type, color} = ratingType;
     return (
-      <span className="rate-wrap">
-        <Rate
-          onChange={updateRatingLevel}
-          onHoverChange={updateRatingLevel}
-          // defaultValue={5}
-          count={totalLevelsCount}
-          value={ratingLevel}
-          style={{color}}
-          character={<Icon type={type}/>}
-          allowClear={false}
-        />
-        {
-          <span className="ant-rate-text">{`Current PCL: ${ratingLevel}`}</span>
-        }
-      </span>
-    );
+      <Card
+        title={ratingTypeDefinition[ratingType - 1]}
+        type="inner"
+        className="children-card rating-card"
+      >
+        <div className="rate-wrap">
+          {this.renderRator(ratingTypeName)}
+          {
+            <span className="ant-rate-text">
+            {`Current Level: ${ratingLevel[ratingTypeName]}`}
+          </span>
+          }
+        </div>
+        <div className="rating-submit-button-wrap">
+          <Button
+            type="primary"
+            block
+            onClick={() => postRatingLevel(ratingType, ratingTypeName, "")}
+          >
+            Submit
+          </Button>
+        </div>
+      </Card>
+    )
   };
+
 
   render() {
     const {
-      maxLevel,
-      minLevel,
-      ratingLevel,
-      updateRatingLevel,
-      postRatingLevel,
-      lastRatingLevel
+      lastRatingInfo,
+      ratingTypeDefinition
     } = this.thisStore;
-
+    const lastRatingString = lastRatingInfo.type ?
+      `[${dayjs.unix(lastRatingInfo.timestamp)
+        .format("HH:mm:ss")}] ${ratingTypeDefinition[
+          lastRatingInfo.type - 1
+        ]}: ${lastRatingInfo.rating_level}`
+      : "No value";
     return (
-      <Card title="乘客舒适度等级记录" className="main card-wrap">
-        <Card title="Comfort Level" type="inner" className="children-card">
-          {/*<Row className="comfort-level-wrap" type="flex" justify="space-around" align="middle">*/}
-            {/*<Col span={16} offset={1}>*/}
-              {/*<Slider*/}
-                {/*max={maxLevel}*/}
-                {/*min={minLevel}*/}
-                {/*onChange={updateRatingLevel}*/}
-                {/*defaultValue={5}*/}
-                {/*value={ratingLevel}*/}
-              {/*/>*/}
-            {/*</Col>*/}
-            {/*<Col span={4} offset={1} className="comfort-level-icon-wrap">*/}
-              {/*{this.renderIcon()}*/}
-            {/*</Col>*/}
-          {/*</Row>*/}
-          <div className="comfort-level-submit-button-wrap">
-            <Button
-              type="primary"
-              block
-              onClick={postRatingLevel}
-            >
-              Submit
-            </Button>
-          </div>
-        </Card>
-        <Card title="Comfort Level 2" type="inner" className="children-card rate-card">
-          {this.renderRate()}
-          <div className="comfort-level-submit-button-wrap">
-            <Button
-              type="primary"
-              block
-              onClick={postRatingLevel}
-            >
-              Submit
-            </Button>
-          </div>
-        </Card>
-        <Card title="Statistics" type="inner" className="children-card">
-          <Statistic
-            title="Last PCL"
-            value={lastRatingLevel}
-            prefix="Level: "
-            // valueStyle={{marginLeft: 30}}
-          />
-        </Card>
+      <Card title="评分" className="main card-wrap">
+        <Row className="rating-recorder">
+          <Col sm={24} md={12}>
+            {this.renderRatingCard(1, "passengerComfortLevel")}
+          </Col>
+          <Col sm={24} md={12}>
+            {this.renderRatingCard(2, "driverEvaluation")}
+          </Col>
+          <Col span={24}>
+            {this.renderRatingCard(3, "driverEmotion")}
+          </Col>
+          <Col span={24}>
+            <Card title="Statistics" type="inner" className="children-card">
+              <Statistic title="Last Rating" value={lastRatingString}/>
+            </Card>
+          </Col>
+        </Row>
       </Card>
     );
   }
