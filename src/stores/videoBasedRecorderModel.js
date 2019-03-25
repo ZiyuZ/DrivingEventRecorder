@@ -72,7 +72,6 @@ export default class VideoBasedRecorderModel {
   };
 
   @action switchPlaying = value => {
-    // console.log("switch playing to: " + value);
     this.playerProps.playing = value === undefined ? !this.playerProps.playing : value;
   };
 
@@ -83,7 +82,6 @@ export default class VideoBasedRecorderModel {
       this.switchPlaying(false);
     } else {
       this.switchPlaying(this.lastPlayingState);
-      this.lastPlayingState = null;
     }
   };
 
@@ -105,7 +103,6 @@ export default class VideoBasedRecorderModel {
     volume: 1.0,
     muted: false,
     playbackRate: 1,
-    // width: "100%",
     height: "40vh",
     style: {margin: "auto"},
     progressInterval: 1000,
@@ -136,6 +133,7 @@ export default class VideoBasedRecorderModel {
           key: 'playbackTime',
           value: e.target.currentTime
         });
+        this.switchPlaying(false);
       });
     },
     onEnded: () => {

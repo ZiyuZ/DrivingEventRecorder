@@ -3,8 +3,9 @@ import "./style/App.less";
 import {Col, Layout, Row} from "antd";
 import Header from "./components/Header";
 import seuLogo from "./static/seu_logo.png";
+import DevTools from "mobx-react-devtools";
 
-class App extends Component {
+export default class App extends Component {
   render() {
     const {Content, Footer} = Layout;
     return (
@@ -30,10 +31,8 @@ class App extends Component {
             </a>
           </Footer>
         </Layout>
-        {process.env.NODE_ENV === 'development' ? require("mobx-react-devtools").default : null}
+        {process.env.NODE_ENV === 'development' && <DevTools/>}
       </div>
     );
   }
 }
-
-export default App;
