@@ -6,7 +6,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/ini.v1"
-	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -135,8 +134,11 @@ func connectDB() *sqlx.DB {
 }
 
 func callBrowser(ifCallBrowser bool) {
-	fmt.Printf("Please visit \"http://localhost:%v\" in your browser.\n", C.ServerPort)
-	fmt.Printf("Visit \"http://%v:%v for other terminals in the LAN.\n\n", GetIntranetIp(), C.ServerPort)
+	fmt.Printf("\nPlease visit \"http://localhost:%v\" in your browser on the local computer.\n", C.ServerPort)
+	fmt.Printf("Or through an intranet address for other devices in the LAN:\n" +
+		"\t1. Run \"ipconfig /all\" in your terminal and view IP addresses.\n" +
+		"\t2. Find the address of the same network as the target device.\n" +
+		"\t3. Visit \"http://[IP]:5000\" on the target device.\n\n")
 	if ifCallBrowser {
 		cmd := fmt.Sprintf("/c start http://localhost:%v", C.ServerPort)
 		err := exec.Command("cmd", cmd).Start()
@@ -144,25 +146,6 @@ func callBrowser(ifCallBrowser bool) {
 			return
 		}
 	}
-}
-
-func GetIntranetIp() string {
-	addrs, err := net.InterfaceAddrs()
-
-	if err != nil {
-		E.Logger.Error(err)
-		return "Unknown"
-	}
-
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				return ipnet.IP.String()
-			}
-		}
-	}
-	E.Logger.Error("Unable to obtain legal LAN IP. Please check your network.")
-	return "Unknown"
 }
 
 func GetFileListByPath() (fileList []string, err error) {
