@@ -11,8 +11,9 @@ public/
 #test file
 test*
 
-# data
+# mock data
 *.db
+videos/
 
 # log file
 *.log
