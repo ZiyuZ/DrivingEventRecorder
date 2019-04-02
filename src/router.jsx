@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {BrowserRouter, Route, Switch} from "react-router-dom";
+import {HashRouter, Route, Switch} from "react-router-dom";
 import App from "./App";
 import Home from "./pages/home";
 import VideoBasedRecorder from "./pages/videoBasedRecorder";
@@ -18,18 +18,19 @@ export default class router extends Component {
       <Route path="/recorder/real_time" component={RealTimeRecorder}/>
       <Route path="/recorder/rating" component={RatingRecorder}/>
       <Route path="/recorder/data_view" component={DataView}/>
+      <Route component={Home}/>
     </Switch>
   );
 
   render() {
     return (
-      <BrowserRouter>
+      <HashRouter>
         <Provider store={store}>
           <App>
             <Route path="/" render={this.renderRoutes}/>
           </App>
         </Provider>
-      </BrowserRouter>
+      </HashRouter>
     );
   }
 }
