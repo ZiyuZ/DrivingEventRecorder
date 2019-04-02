@@ -5,7 +5,9 @@ import {
   Col,
   Button,
   DatePicker,
-  Select, InputNumber
+  Select,
+  InputNumber,
+  Tooltip
 } from "antd";
 import ReactPlayer from "react-player";
 import {inject, observer} from "mobx-react";
@@ -40,7 +42,7 @@ export default class VideoBasedRecorder extends Component {
       return <Select
         showSearch
         disabled={videoProps.isFrozen}
-        placeholder={videoList.length === 0 ? "No videos" : "Select a video" }
+        placeholder={videoList.length === 0 ? "No videos" : "Select a video"}
         optionFilterProp="children"
         onChange={(value) => {
           this.thisStore.updateVideoProp({key: "name", value})
@@ -57,55 +59,78 @@ export default class VideoBasedRecorder extends Component {
     }
   };
 
-  render() {
+  renderOptions = () => {
     const {
       videoProps,
       playerProps,
       updateVideoProp,
       loadVideo,
       releaseVideo,
-      updatePlaybackRate
+      updatePlaybackRate,
+      changePlayerFlip,
+      playerVerticalFlip,
+      playerHorizontalFlip
+    } = this.thisStore;
+
+    return <Row gutter={16} className="options-wrap">
+      <Col span={6}>
+        {this.renderVideoList()}
+      </Col>
+      <Col span={8}>
+        <DatePicker
+          showTime
+          disabled={videoProps.isFrozen}
+          placeholder="Set video start time"
+          onChange={(time) => updateVideoProp({key: "baseTime", value: time})}
+          value={videoProps.baseTime}
+          className="date-pick"
+        />
+      </Col>
+      <Col span={4}>
+        {videoProps.isFrozen ?
+          <Button type="danger" onClick={releaseVideo}>Stop Recording</Button> :
+          <Button type="primary" onClick={loadVideo}>Load Video</Button>}
+      </Col>
+      <Col span={5}>
+        <span>Playback Rate:&nbsp;&nbsp;</span>
+        <InputNumber
+          addonBefore="Rate"
+          min={0.1} max={5.0} step={0.1}
+          value={playerProps.playbackRate}
+          className="playback-rate-input"
+          onChange={value => updatePlaybackRate(value)}
+        />
+      </Col>
+      <Col span={2}>
+        <Button.Group>
+          <Tooltip title="播放器水平翻转">
+            <Button
+              icon="border-horizontal"
+              type={playerHorizontalFlip ? "primary" : "default"}
+              onClick={()=>changePlayerFlip("playerHorizontalFlip")}
+            />
+          </Tooltip>
+          <Tooltip title="播放器垂直翻转">
+            <Button
+              icon="border-verticle"
+              type={playerVerticalFlip ? "primary" : "default"}
+              onClick={()=>changePlayerFlip("playerVerticalFlip")}
+            />
+          </Tooltip>
+        </Button.Group>
+      </Col>
+    </Row>
+  };
+
+  render() {
+    const {
+      playerProps,
+      playerFlipStyle
     } = this.thisStore;
     return (
       <Card title="视频事件记录" className="main card-wrap">
-        <Row gutter={16} className="options-wrap">
-          <Col span={6}>
-            {this.renderVideoList()}
-          </Col>
-          <Col span={8}>
-            <DatePicker
-              showTime
-              disabled={videoProps.isFrozen}
-              placeholder="Set video start time"
-              onChange={(time) => updateVideoProp({
-                key: "baseTime",
-                value: time
-              })}
-              value={videoProps.baseTime}
-              className="date-pick"
-            />
-          </Col>
-          <Col span={4}>
-            {videoProps.isFrozen ?
-              <Button type="danger" onClick={releaseVideo}>
-                Stop Recording
-              </Button> :
-              <Button type="primary" onClick={loadVideo}>
-                Load Video
-              </Button>}
-          </Col>
-          <Col span={5}>
-            <span>Playback Rate:&nbsp;&nbsp;</span>
-            <InputNumber
-              addonBefore="Rate"
-              min={0.1} max={5.0} step={0.1}
-              value={playerProps.playbackRate}
-              className="playback-rate-input"
-              onChange={value => updatePlaybackRate(value)}
-            />
-          </Col>
-        </Row>
-        <ReactPlayer {...playerProps}/>
+        {this.renderOptions()}
+        <ReactPlayer {...playerProps} style={playerFlipStyle} className="player"/>
         <div className="event-recorder-wrap">
           {playerProps.url ? <EventRecorder/> : null}
         </div>

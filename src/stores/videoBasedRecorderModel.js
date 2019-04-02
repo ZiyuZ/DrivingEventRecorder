@@ -58,6 +58,18 @@ export default class VideoBasedRecorderModel {
     });
   };
 
+  @observable playerVerticalFlip = false;
+  @observable playerHorizontalFlip = false;
+
+  @action changePlayerFlip = (flipType, flipValue) => {
+    if (!flipValue) flipValue = !this[flipType];
+    this[flipType] = flipValue;
+  };
+
+  @computed get playerFlipStyle () {
+    return {transform: `scale(${this.playerHorizontalFlip ? -1 : 1}, ${this.playerVerticalFlip ? -1 : 1})`}
+  }
+
   @action updatePlaybackRate = value => {
     const playbackRate = parseFloat(value);
     if (isNaN(playbackRate) || playbackRate < 0.1 || playbackRate > 5.0) {
