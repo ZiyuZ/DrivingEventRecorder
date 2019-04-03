@@ -16,10 +16,10 @@ export default class EventRecorder extends Component {
   render() {
     return this.props.store.EventDefinition.eventDefinition ? (
       <Row className="event-recorder">
-        <Col xs={24} sm={12}>
+        <Col xs={24} sm={12} className="event-recorder-col">
           <EventSelector/>
         </Col>
-        <Col xs={24} sm={12}>
+        <Col xs={24} sm={12} className="event-recorder-col">
           <StagingArea/>
         </Col>
         <EventDetailModal/>

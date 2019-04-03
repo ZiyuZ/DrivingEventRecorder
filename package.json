@@ -1,6 +1,6 @@
 {
   "name": "driving_event_recorder_frontend",
-  "version": "0.11.3",
+  "version": "0.11.4",
   "private": true,
   "devDependencies": {
     "babel-plugin-import": "^1.11.0",

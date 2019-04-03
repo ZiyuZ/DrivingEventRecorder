@@ -55,6 +55,9 @@ export default class VideoBasedRecorderModel {
       this.videoProps.isFrozen = false;
       this.videoProps.playbackTime = null;
       this.playerProps.url = null;
+      this.playerProps.playbackRate = 1.0;
+      this.playerVerticalFlip = false;
+      this.playerHorizontalFlip = false;
     });
   };
 
@@ -67,7 +70,10 @@ export default class VideoBasedRecorderModel {
   };
 
   @computed get playerFlipStyle () {
-    return {transform: `scale(${this.playerHorizontalFlip ? -1 : 1}, ${this.playerVerticalFlip ? -1 : 1})`}
+    return {
+      transform: `scale(${this.playerHorizontalFlip ? -1 : 1}, ${this.playerVerticalFlip ? -1 : 1})`,
+      backgroundColor: "#000"
+    }
   }
 
   @action updatePlaybackRate = value => {

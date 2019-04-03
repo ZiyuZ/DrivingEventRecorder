@@ -7,7 +7,8 @@ import {
   DatePicker,
   Select,
   InputNumber,
-  Tooltip
+  Tooltip,
+  Icon
 } from "antd";
 import ReactPlayer from "react-player";
 import {inject, observer} from "mobx-react";
@@ -92,29 +93,34 @@ export default class VideoBasedRecorder extends Component {
           <Button type="primary" onClick={loadVideo}>Load Video</Button>}
       </Col>
       <Col span={5}>
-        <span>Playback Rate:&nbsp;&nbsp;</span>
-        <InputNumber
-          addonBefore="Rate"
-          min={0.1} max={5.0} step={0.1}
-          value={playerProps.playbackRate}
-          className="playback-rate-input"
-          onChange={value => updatePlaybackRate(value)}
-        />
+        <Tooltip title="Playback Rate">
+          <Icon type="clock-circle" theme="twoTone" className="playback-rate-icon"/>
+          <InputNumber
+            addonBefore="Rate"
+            min={0.1} max={5.0} step={0.1}
+            value={playerProps.playbackRate}
+            className="playback-rate-input"
+            onChange={value => updatePlaybackRate(value)}
+            disabled={!videoProps.isFrozen}
+          />
+        </Tooltip>
       </Col>
       <Col span={3}>
         <Button.Group>
-          <Tooltip title="播放器水平翻转">
+          <Tooltip title="Player Flips Horizontal">
             <Button
               icon="border-horizontal"
               type={playerHorizontalFlip ? "primary" : "default"}
-              onClick={()=>changePlayerFlip("playerHorizontalFlip")}
+              onClick={() => changePlayerFlip("playerHorizontalFlip")}
+              disabled={!videoProps.isFrozen}
             />
           </Tooltip>
-          <Tooltip title="播放器垂直翻转">
+          <Tooltip title="Player Flips Vertically">
             <Button
               icon="border-verticle"
               type={playerVerticalFlip ? "primary" : "default"}
-              onClick={()=>changePlayerFlip("playerVerticalFlip")}
+              onClick={() => changePlayerFlip("playerVerticalFlip")}
+              disabled={!videoProps.isFrozen}
             />
           </Tooltip>
         </Button.Group>
@@ -131,7 +137,7 @@ export default class VideoBasedRecorder extends Component {
       <Card title="视频事件记录" className="main card-wrap">
         {this.renderOptions()}
         <ReactPlayer {...playerProps} style={playerFlipStyle} className="player"/>
-        <div className="event-recorder-wrap">
+        <div className="video-event-recorder-wrap">
           {playerProps.url ? <EventRecorder/> : null}
         </div>
       </Card>

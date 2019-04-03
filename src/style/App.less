@@ -7,11 +7,15 @@
 
     .content {
       padding-top: 20px;
-      height: 86vh;
+      height: calc(95vh - 3rem - 20px);
       .main {
-        height: 82vh;
+        height: 100%;
         flex: 1;
-        overflow: auto;
+
+        .ant-card-body {
+          height: calc(100% - 48px);
+          overflow: scroll;
+        }
         .children-card {
           margin: 10px 10px;
         }

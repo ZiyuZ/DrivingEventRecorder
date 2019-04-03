@@ -9,7 +9,8 @@
   }
 
   .date-pick {
-    width: 280px !important;
+    width: 100% !important;
+    max-width: 280px !important;
   }
 
   .statistic-value-wrap {
@@ -17,7 +18,10 @@
       font-size: 18px;
     }
   }
-
+  .playback-rate-icon {
+    margin-right: 10px;
+    font-size: 18px;
+  }
   .playback-rate-input {
     width: 60px;
   }
@@ -27,8 +31,6 @@
   margin: auto;
 }
 
-.event-recorder-wrap {
-  .children-card {
-    height: 24vh !important;
-  }
+.video-event-recorder-wrap {
+  height: calc(100% - 40vh - 64px);
 }
