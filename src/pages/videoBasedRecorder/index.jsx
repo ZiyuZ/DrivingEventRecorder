@@ -76,7 +76,7 @@ export default class VideoBasedRecorder extends Component {
       <Col span={6}>
         {this.renderVideoList()}
       </Col>
-      <Col span={8}>
+      <Col span={6}>
         <DatePicker
           showTime
           disabled={videoProps.isFrozen}
@@ -101,7 +101,7 @@ export default class VideoBasedRecorder extends Component {
           onChange={value => updatePlaybackRate(value)}
         />
       </Col>
-      <Col span={2}>
+      <Col span={3}>
         <Button.Group>
           <Tooltip title="播放器水平翻转">
             <Button

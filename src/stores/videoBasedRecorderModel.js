@@ -151,7 +151,7 @@ export default class VideoBasedRecorderModel {
     onEnded: () => {
     },
     onError: (err) => {
-      console.log("Error: " + err)
+      console.error("Error: " + JSON.stringify(err))
     },
     onSeek: (playbackTime) => {
       this.updateVideoProp({
