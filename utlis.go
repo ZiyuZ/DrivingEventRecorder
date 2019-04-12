@@ -6,6 +6,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/olekukonko/tablewriter"
 	"gopkg.in/ini.v1"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -137,8 +138,20 @@ func callBrowser(ifCallBrowser bool) {
 	fmt.Printf("\nPlease visit \"http://localhost:%v\" in your browser on the local computer.\n", C.ServerPort)
 	fmt.Printf("Or through an intranet address for other devices in the LAN:\n" +
 		"\t1. Run \"ipconfig /all\" in your terminal and view IP addresses.\n" +
-		"\t2. Find the address of the same network as the target device.\n" +
-		"\t3. Visit \"http://[IP]:5000\" on the target device.\n\n")
+		"\t2. Find the local address of the intranet where the target device is located.\n" +
+		"\t3. Visit \"http://[IP]:5000\" on the target device.\n")
+	ifaces, _ := net.Interfaces()
+	for _, i := range ifaces {
+		addrs, _ := i.Addrs()
+		// handle err
+		for _, addr := range addrs {
+			ipnet, _ := addr.(*net.IPNet)
+			if ipnet.IP.IsGlobalUnicast() {
+				fmt.Printf("\t(Maybe you can try: \"http://%v:5000\")\n\n", ipnet.IP.To4())
+			}
+		}
+	}
+
 	if ifCallBrowser {
 		cmd := fmt.Sprintf("/c start http://localhost:%v", C.ServerPort)
 		err := exec.Command("cmd", cmd).Start()
