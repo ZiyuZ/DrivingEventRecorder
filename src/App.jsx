@@ -1,10 +1,13 @@
 import React, {Component} from "react";
 import "./style/App.less";
-import {Col, Layout, Row} from "antd";
+import {Button, Col, Layout, Row} from "antd";
 import Header from "./components/Header";
 import seuLogo from "./static/seu_logo.png";
 import DevTools from "mobx-react-devtools";
+import {inject, observer} from "mobx-react";
 
+@inject("store")
+@observer
 export default class App extends Component {
   render() {
     const {Content, Footer} = Layout;
@@ -29,6 +32,14 @@ export default class App extends Component {
             <a href="//www.seu.edu.cn" target="_blank">
               <img src={seuLogo} className="seu-logo" alt="seu-logo"/>
             </a>
+
+            <div className="config-wrap" style={{marginLeft: "20px"}}>
+              <Button title="Switch Language" size="small"
+                      onClick={this.props.store.GlobalStore.switchLang}
+              >
+                Switch Language
+              </Button>
+            </div>
           </Footer>
         </Layout>
         {process.env.NODE_ENV === 'development' && <DevTools/>}

@@ -1,4 +1,4 @@
-import {observable, action, configure} from "mobx";
+import {action, computed, configure, observable} from "mobx";
 
 configure({enforceActions: "always"});
 
@@ -13,7 +13,60 @@ export default class GlobalStore {
     this.selectedPageId = [key];
   };
 
+  @observable displayEnglish = false;
+
+  @computed get appTexts() {
+    return this.displayEnglish ? {
+      AppName: "Event Recorder",
+      pageTitles: ["Home", "Video Event", "Real-Time Event", "Real-Time Scoring", "Data View"]
+    } : {
+      AppName: "驾驶事件记录器",
+      pageTitles: ["首页", "视频事件", "实时事件", "评分", "数据视图"]
+    };
+  }
+
+  @computed get pagesMetaInfo() {
+    const {pageTitles} = this.appTexts;
+    return [
+      {
+        id: 0,
+        pageTitle: pageTitles[0],
+        pageUrl: "/",
+        icon: "home"
+      },
+      {
+        id: 1,
+        pageTitle: pageTitles[1],
+        pageUrl: "/recorder/video_based",
+        icon: "video-camera"
+      },
+      {
+        id: 2,
+        pageTitle: pageTitles[2],
+        pageUrl: "/recorder/real_time",
+        icon: "dashboard"
+      },
+      {
+        id: 3,
+        pageTitle: pageTitles[3],
+        pageUrl: "/recorder/rating",
+        icon: "team"
+      },
+      {
+        id: 4,
+        pageTitle: pageTitles[4],
+        pageUrl: "/recorder/data_view",
+        icon: "area-chart"
+      },
+    ];
+  }
+
   @action initSelectedPageId = () => {
     this.changeSelectedPageId(document.location.pathname);
-  }
+  };
+
+  @action switchLang = () => {
+    this.displayEnglish = !this.displayEnglish;
+  };
+
 }

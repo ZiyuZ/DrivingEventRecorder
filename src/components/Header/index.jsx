@@ -1,7 +1,6 @@
 import React, {Component} from "react";
 import {inject, observer} from "mobx-react";
-import Pages from "../../config/pagesMetaInfo";
-import {Menu, Layout, Icon, Row, Col} from "antd";
+import {Col, Icon, Layout, Menu, Row} from "antd";
 import {NavLink} from "react-router-dom";
 import logo from "../../static/logo.svg";
 import "./index.less";
@@ -14,8 +13,8 @@ export default class Header extends Component {
     this.props.store.GlobalStore.initSelectedPageId();
   }
 
-  renderMenu = data => {
-    return data.map(item => {
+  renderMenu = () => {
+    return this.props.store.GlobalStore.pagesMetaInfo.map(item => {
       return (
         <Menu.Item key={item.pageUrl}>
           <NavLink to={item.pageUrl}>
@@ -29,17 +28,17 @@ export default class Header extends Component {
 
   render() {
     const {Header} = Layout;
-    const {selectedPageId, changeSelectedPageId} = this.props.store.GlobalStore;
+    const {selectedPageId, changeSelectedPageId, appTexts} = this.props.store.GlobalStore;
     return (
       <Header>
         <Row align="middle">
-          <Col className="logo-wrap" xs={{span:4, offset:1}} md={{span:1, offset:1}}>
+          <Col className="logo-wrap" xs={{span: 4, offset: 1}} md={{span: 1, offset: 1}}>
             <img src={logo} alt="logo" className="logo"/>
           </Col>
-          <Col className="name-wrap"  xs={0} md={{span:4, offset:0}} lg={{span:3, offset:0}}>
-            驾驶事件记录器
+          <Col className="name-wrap" xs={0} md={{span: 4, offset: 0}} lg={{span: 3, offset: 0}}>
+            {appTexts.AppName}
           </Col>
-          <Col className="menu-wrap"  xs={18} md={{span:17, offset:0}} lg={{span:18, offset:0}}>
+          <Col className="menu-wrap" xs={18} md={{span: 17, offset: 0}} lg={{span: 18, offset: 0}}>
             <Menu
               selectedKeys={selectedPageId}
               theme="dark"
@@ -47,7 +46,7 @@ export default class Header extends Component {
               className="menu"
               onClick={e => changeSelectedPageId(e.key)}
             >
-              {this.renderMenu(Pages)}
+              {this.renderMenu()}
             </Menu>
           </Col>
         </Row>

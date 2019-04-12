@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Card, Col, Icon, Row, Slider, Button, Rate, Statistic} from "antd";
+import {Button, Card, Col, Icon, Rate, Row, Statistic} from "antd";
 import {inject, observer} from "mobx-react";
 import "./index.less";
 import dayjs from "dayjs";
@@ -10,7 +10,7 @@ export default class RatingRecorder extends Component {
 
   thisStore = this.props.store.RatingRecorder;
 
-  renderRator = (ratingTypeName) => {
+  renderRater = (ratingTypeName) => {
     const {
       updateRatingLevel, ratingLevel, totalLevelsCount,
       getEmotionalIconByLevel
@@ -40,7 +40,7 @@ export default class RatingRecorder extends Component {
         className="children-card rating-card"
       >
         <div className="rate-wrap">
-          {this.renderRator(ratingTypeName)}
+          {this.renderRater(ratingTypeName)}
           {
             <span className="ant-rate-text">
             {`Current Level: ${ratingLevel[ratingTypeName]}`}
@@ -73,7 +73,7 @@ export default class RatingRecorder extends Component {
         ]}: ${lastRatingInfo.rating_level}`
       : "No value";
     return (
-      <Card title="评分" className="main card-wrap">
+      <Card title={this.props.store.GlobalStore.appTexts.pageTitles[3]} className="main card-wrap">
         <Row className="rating-recorder">
           <Col sm={24} md={12}>
             {this.renderRatingCard(1, "passengerComfortLevel")}

@@ -1,9 +1,9 @@
-import React, { Component } from "react";
-import { Link } from "react-router-dom";
-import { inject, observer } from "mobx-react";
-import { Card, Button } from "antd";
-import pagesMetaInfo from "../../config/pagesMetaInfo";
+import React, {Component} from "react";
+import {Link} from "react-router-dom";
+import {inject, observer} from "mobx-react";
+import {Button, Card} from "antd";
 import "./index.less";
+
 @inject("store")
 @observer
 export default class Home extends Component {
@@ -12,7 +12,7 @@ export default class Home extends Component {
   };
 
   renderButton = item => {
-    const { id, pageTitle, pageUrl, icon } = item;
+    const {id, pageTitle, pageUrl, icon} = item;
     return (
       <Link
         key={id}
@@ -36,14 +36,9 @@ export default class Home extends Component {
 
   render() {
     return (
-      <Card title="首页" className="main card-wrap home-page-card">
-        {/*<Alert*/}
-          {/*message="注意: 视频事件 模块尚未被完全实现."*/}
-          {/*type="warning"*/}
-          {/*closable*/}
-        {/*/>*/}
+      <Card title={this.props.store.GlobalStore.appTexts.pageTitles[0]} className="main card-wrap home-page-card">
         <div className="link-button-group">
-          {pagesMetaInfo.map(this.renderButton)}
+          {this.props.store.GlobalStore.pagesMetaInfo.map(this.renderButton)}
         </div>
         {/*TODO: 配置后端选项, 一些文本框就行*/}
       </Card>

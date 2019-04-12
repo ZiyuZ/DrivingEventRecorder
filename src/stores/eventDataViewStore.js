@@ -11,43 +11,46 @@ export default class EventDataViewStore {
     this.rootStore = rootStore;
   }
 
-  columns = [
-    {
-      title: "ID",
-      dataIndex: "key",
-      key: "key"
-    },
-    {
-      title: "日期",
-      dataIndex: "date",
-      key: "date"
-    },
-    {
-      title: "开始时间",
-      dataIndex: "startTime",
-      key: "startTime"
-    },
-    {
-      title: "结束时间",
-      dataIndex: "stopTime",
-      key: "stopTime"
-    },
-    {
-      title: "事件类型",
-      dataIndex: "eventType",
-      key: "eventType"
-    },
-    {
-      title: "事件描述",
-      dataIndex: "eventCode",
-      key: "eventCode"
-    },
-    {
-      title: "备注",
-      dataIndex: "description",
-      key: "description"
-    }
-  ];
+  @computed get columns() {
+    const {displayEnglish} = this.rootStore.GlobalStore;
+    return [
+      {
+        title: "ID",
+        dataIndex: "key",
+        key: "key"
+      },
+      {
+        title: displayEnglish ? "Date" : "日期",
+        dataIndex: "date",
+        key: "date"
+      },
+      {
+        title: displayEnglish ? "Event Start Time" : "开始时间",
+        dataIndex: "startTime",
+        key: "startTime"
+      },
+      {
+        title: displayEnglish ? "Event Stop Time" : "结束时间",
+        dataIndex: "stopTime",
+        key: "stopTime"
+      },
+      {
+        title: displayEnglish ? "Event Type" : "事件类型",
+        dataIndex: "eventType",
+        key: "eventType"
+      },
+      {
+        title: displayEnglish ? "Event Description" : "事件描述",
+        dataIndex: "eventCode",
+        key: "eventCode"
+      },
+      {
+        title: displayEnglish ? "Note" : "备注",
+        dataIndex: "description",
+        key: "description"
+      }
+    ];
+  }
 
   @computed get eventDefinition() {
     return this.rootStore.EventDefinition.eventDefinition;

@@ -1,6 +1,6 @@
 import React, {Component} from "react";
 import {inject, observer} from "mobx-react";
-import {Card, Spin, Alert, Table, Button} from "antd";
+import {Alert, Button, Card, Spin, Table} from "antd";
 import {CSVLink} from "react-csv";
 import dayjs from "dayjs";
 
@@ -28,7 +28,6 @@ export default class DataView extends Component {
       }
     };
     return columns.concat([action]);
-    ;
   };
 
   renderTable = () => {
@@ -39,8 +38,8 @@ export default class DataView extends Component {
       return (
         <Spin tip="Loading...">
           <Alert
-            message="正在加载"
-            description="正在加载事件列表, 请稍候..."
+            message="Loading..."
+            description="Loading event list..."
             type="info"
           />
         </Spin>
@@ -64,7 +63,7 @@ export default class DataView extends Component {
   render() {
     return (
       <Card
-        title="数据视图"
+        title={this.props.store.GlobalStore.appTexts.pageTitles[4]}
         className="main card-wrap"
         extra={this.renderDownloadCSVButton()}
       >

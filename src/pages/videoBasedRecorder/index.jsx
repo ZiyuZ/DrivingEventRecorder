@@ -1,15 +1,5 @@
 import React, {Component} from "react";
-import {
-  Card,
-  Row,
-  Col,
-  Button,
-  DatePicker,
-  Select,
-  InputNumber,
-  Tooltip,
-  Icon
-} from "antd";
+import {Button, Card, Col, DatePicker, Icon, InputNumber, Row, Select, Tooltip} from "antd";
 import ReactPlayer from "react-player";
 import {inject, observer} from "mobx-react";
 import "./index.less";
@@ -134,7 +124,7 @@ export default class VideoBasedRecorder extends Component {
       playerFlipStyle
     } = this.thisStore;
     return (
-      <Card title="视频事件记录" className="main card-wrap">
+      <Card title={this.props.store.GlobalStore.appTexts.pageTitles[1]} className="main card-wrap">
         {this.renderOptions()}
         <ReactPlayer {...playerProps} style={playerFlipStyle} className="player"/>
         <div className="video-event-recorder-wrap">
