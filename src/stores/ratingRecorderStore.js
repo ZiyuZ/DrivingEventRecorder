@@ -1,11 +1,11 @@
-import {observable, action, configure, runInAction, computed, toJS} from "mobx";
+import {action, configure, observable, runInAction} from "mobx";
 import Axios from "../utils/axios";
 import backendConfig from "../config/backendConfig";
 import dayjs from "dayjs";
 
 configure({enforceActions: "always"});
 
-export default class RatingRecorderModel {
+export default class RatingRecorderStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
   }

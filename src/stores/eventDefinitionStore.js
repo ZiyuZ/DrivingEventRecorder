@@ -1,10 +1,10 @@
-import { observable, action, configure, runInAction } from "mobx";
+import {action, configure, observable, runInAction} from "mobx";
 import Axios from "../utils/axios";
 import backendConfig from "../config/backendConfig";
 
 configure({ enforceActions: "always" });
 
-export default class EventDefinitionModel {
+export default class EventDefinitionStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
   }

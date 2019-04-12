@@ -1,4 +1,4 @@
-import {observable, action, computed, configure, toJS, runInAction} from "mobx";
+import {action, computed, configure, observable, runInAction} from "mobx";
 import {notification} from 'antd';
 import Axios from "../utils/axios"
 import backendConfig from "../config/backendConfig";
@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 
 configure({enforceActions: "always"});
 
-export default class VideoBasedRecorderModel {
+export default class VideoBasedRecorderStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
   }

@@ -1,10 +1,4 @@
-import {
-  observable,
-  action,
-  configure,
-  computed,
-  runInAction
-} from "mobx";
+import {action, computed, configure, observable, runInAction} from "mobx";
 import backendConfig from "../config/backendConfig";
 import Axios from "../utils/axios";
 import dayjs from "dayjs";
@@ -12,7 +6,7 @@ import utils from "../utils/utils"
 
 configure({enforceActions: "always"});
 
-export default class EventDataViewModel {
+export default class EventDataViewStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
   }
@@ -106,7 +100,7 @@ export default class EventDataViewModel {
 
   @action fetchAllData = () => {
     if (!this.eventDefinition) {
-      this.rootStore.EventDefinition.fecthEventDefinition().then(res => {
+      this.rootStore.EventDefinition.fecthEventDefinition().then(() => {
         this.fetchEventData();
       });
     } else {
@@ -119,7 +113,7 @@ export default class EventDataViewModel {
       url: backendConfig.eventApi,
       method: "DELETE",
       params: {id}
-    }).then((res) => {
+    }).then(() => {
       runInAction(() => {
         this.eventData = this.eventData.filter(event => event.key !== id);
       })

@@ -1,11 +1,4 @@
-import {
-  observable,
-  action,
-  configure,
-  computed,
-  runInAction,
-  toJS
-} from "mobx";
+import {action, computed, configure, observable, runInAction, toJS} from "mobx";
 import {notification} from "antd";
 import Axios from "../utils/axios";
 import dayjs from "dayjs";
@@ -14,7 +7,7 @@ import utils from "../utils/utils"
 
 configure({enforceActions: "always"});
 
-export default class EventRecorderModel {
+export default class EventRecorderStore {
   constructor(rootStore) {
     this.rootStore = rootStore;
   }

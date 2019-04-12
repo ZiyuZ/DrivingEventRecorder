@@ -1,9 +1,9 @@
 import GlobalStore from "./globalStore";
-import EventDefinition from "./eventDefinitionModel";
-import EventRecorder from "./eventRecorderModel";
-import EventDataView from "./eventDataViewModel";
-import RatingRecorder from "./ratingRecorderModel";
-import VideoBasedRecorder from "./videoBasedRecorderModel"
+import EventDefinition from "./eventDefinitionStore";
+import EventRecorder from "./eventRecorderStore";
+import EventDataView from "./eventDataViewStore";
+import RatingRecorder from "./ratingRecorderStore";
+import VideoBasedRecorder from "./videoBasedRecorderStore"
 
 class RootStore {
   constructor () {
