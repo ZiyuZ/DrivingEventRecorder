@@ -9,6 +9,13 @@ import {inject, observer} from "mobx-react";
 @inject("store")
 @observer
 export default class App extends Component {
+
+  componentDidMount() {
+    if (navigator.language === "zh-CN") {
+      this.props.store.GlobalStore.switchLang();
+    }
+  }
+
   render() {
     const {Content, Footer} = Layout;
     return (

@@ -13,7 +13,7 @@ export default class GlobalStore {
     this.selectedPageId = [key];
   };
 
-  @observable displayEnglish = false;
+  @observable displayEnglish = true;
 
   @computed get appTexts() {
     return this.displayEnglish ? {
