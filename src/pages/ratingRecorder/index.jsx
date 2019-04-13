@@ -86,19 +86,23 @@ export default class RatingRecorder extends Component {
       lastRatingInfo,
       raterDefinition
     } = this.thisStore;
+    const {displayEnglish} = this.thisStore.rootStore.GlobalStore;
     const lastRatingString = lastRatingInfo.type ?
-      `[${dayjs.unix(lastRatingInfo.timestamp)
-        .format("HH:mm:ss")}] ${raterDefinition[
-        lastRatingInfo.type
-        ]}: ${lastRatingInfo.rating_level}`
+      `[${
+        dayjs.unix(lastRatingInfo.timestamp).format("HH:mm:ss")
+        }] ${
+        raterDefinition[lastRatingInfo.type]
+        }: ${
+        lastRatingInfo.rating_level
+        }`
       : "No value";
     return (
       <Card title={this.props.store.GlobalStore.appTexts.pageTitles[3]} className="main card-wrap">
         <Row className="rating-recorder">
           {this.renderRaters()}
           <Col span={24}>
-            <Card title="Statistics" type="inner" className="children-card">
-              <Statistic title="Last Rating" value={lastRatingString}/>
+            <Card title={displayEnglish ? "Statistics" : "统计信息"} type="inner" className="children-card">
+              <Statistic title={displayEnglish ? "Last Rating" : "上次评价"} value={lastRatingString}/>
             </Card>
           </Col>
         </Row>

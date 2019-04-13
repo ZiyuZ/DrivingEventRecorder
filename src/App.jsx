@@ -44,7 +44,7 @@ export default class App extends Component {
               <Button title="Switch Language" size="small"
                       onClick={this.props.store.GlobalStore.switchLang}
               >
-                Switch Language
+                {this.props.store.GlobalStore.displayEnglish ? "切换语言" : "Switch Language"}
               </Button>
             </div>
           </Footer>

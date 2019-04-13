@@ -53,6 +53,7 @@ export default class RatingRecorderStore {
       }
     ]
   };
+
   @observable lastRatingInfo = {
     type: null,
     timestamp: null,
@@ -76,7 +77,7 @@ export default class RatingRecorderStore {
   };
 
   @action updateRatingLevel = (raterID, newLevel) => {
-    if (newLevel && raterID) this.ratingLevel[raterID] = newLevel;
+    if (!isNaN(newLevel) && raterID) this.ratingLevel[raterID] = newLevel;
   };
 
   @action postRatingLevel = (raterID, description) => {
