@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Button, Card, Col, Icon, Rate, Row, Statistic} from "antd";
+import {Button, Card, Col, Icon, Radio, Rate, Row, Statistic} from "antd";
 import {inject, observer} from "mobx-react";
 import "./index.less";
 import dayjs from "dayjs";
@@ -10,80 +10,92 @@ export default class RatingRecorder extends Component {
 
   thisStore = this.props.store.RatingRecorder;
 
-  renderRater = (ratingTypeName) => {
+  renderRater = (rater) => {
     const {
-      updateRatingLevel, ratingLevel, totalLevelsCount,
-      getEmotionalIconByLevel
+      updateRatingLevel, ratingLevel, getEmotionalIconByLevel
     } = this.thisStore;
-    const {icon, color} = getEmotionalIconByLevel(ratingTypeName);
-    return <Rate
-      onChange={(value) => updateRatingLevel(ratingTypeName, value)}
-      onHoverChange={(value) => updateRatingLevel(ratingTypeName, value)}
-      count={totalLevelsCount}
-      value={ratingLevel[ratingTypeName]}
-      style={{color}}
-      character={<Icon type={icon}/>}
-      allowClear={false}
-    />
+    if (rater.type === "rate") {
+      const {icon, color} = getEmotionalIconByLevel(rater.id);
+      return <Rate
+        onChange={(value) => updateRatingLevel(rater.id, value)}
+        onHoverChange={(value) => updateRatingLevel(rater.id, value)}
+        count={rater.levels}
+        value={ratingLevel[rater.id]}
+        style={{color}}
+        character={<Icon type={icon}/>}
+        allowClear={false}
+      />
+    } else {
+      return (
+        <Radio.Group
+          value={ratingLevel[rater.id]}
+          onChange={(e) => updateRatingLevel(rater.id, e.target.value)}
+        >
+          {rater.levels.map(
+            (level, index) => <Radio value={level} key={index}>{level}</Radio>)
+          }
+        </Radio.Group>
+      );
+    }
   };
 
-  renderRatingCard = (ratingType, ratingTypeName) => {
+  renderRaterCard = (rater) => {
     const {
-      ratingTypeDefinition,
+      raterDefinition,
       postRatingLevel,
       ratingLevel,
     } = this.thisStore;
+    const {displayEnglish} = this.thisStore.rootStore.GlobalStore;
     return (
-      <Card
-        title={ratingTypeDefinition[ratingType - 1]}
-        type="inner"
-        className="children-card rating-card"
-      >
-        <div className="rate-wrap">
-          {this.renderRater(ratingTypeName)}
-          {
-            <span className="ant-rate-text">
-            {`Current Level: ${ratingLevel[ratingTypeName]}`}
-          </span>
-          }
-        </div>
-        <div className="rating-submit-button-wrap">
-          <Button
-            type="primary"
-            block
-            onClick={() => postRatingLevel(ratingType, ratingTypeName, "")}
-          >
-            Submit
-          </Button>
-        </div>
-      </Card>
+      <Col sm={24} md={12} key={rater.id}>
+        <Card
+          title={raterDefinition[rater.id].raterName}
+          type="inner"
+          className="children-card rating-card"
+        >
+          <div className="rate-wrap">
+            {this.renderRater(rater)}
+            {
+              <span className="ant-rate-text">
+                {`${displayEnglish ? "Current Level" : "当前等级"}: ${ratingLevel[rater.id]}`}
+              </span>
+            }
+          </div>
+          <div className="rating-submit-button-wrap">
+            <Button
+              type="primary"
+              block
+              onClick={() => postRatingLevel(rater.id, "")}
+            >
+              {displayEnglish ? "Submit" : "提交"}
+            </Button>
+          </div>
+        </Card>
+      </Col>
     )
+  };
+
+  renderRaters = () => {
+    const {raterDefinition} = this.thisStore;
+    return raterDefinition.map(this.renderRaterCard);
   };
 
 
   render() {
     const {
       lastRatingInfo,
-      ratingTypeDefinition
+      raterDefinition
     } = this.thisStore;
     const lastRatingString = lastRatingInfo.type ?
       `[${dayjs.unix(lastRatingInfo.timestamp)
-        .format("HH:mm:ss")}] ${ratingTypeDefinition[
-          lastRatingInfo.type - 1
+        .format("HH:mm:ss")}] ${raterDefinition[
+        lastRatingInfo.type
         ]}: ${lastRatingInfo.rating_level}`
       : "No value";
     return (
       <Card title={this.props.store.GlobalStore.appTexts.pageTitles[3]} className="main card-wrap">
         <Row className="rating-recorder">
-          <Col sm={24} md={12}>
-            {this.renderRatingCard(1, "passengerComfortLevel")}
-          </Col>
-          <Col sm={24} md={12}>
-            {this.renderRatingCard(2, "driverEvaluation")}
-          </Col>
-          <Col span={24}>
-            {this.renderRatingCard(3, "driverEmotion")}
-          </Col>
+          {this.renderRaters()}
           <Col span={24}>
             <Card title="Statistics" type="inner" className="children-card">
               <Statistic title="Last Rating" value={lastRatingString}/>
