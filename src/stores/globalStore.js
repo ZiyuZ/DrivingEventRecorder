@@ -1,4 +1,5 @@
 import {action, computed, configure, observable} from "mobx";
+import {notification} from "antd";
 
 configure({enforceActions: "always"});
 
@@ -65,8 +66,14 @@ export default class GlobalStore {
     this.changeSelectedPageId(document.location.pathname);
   };
 
-  @action switchLang = () => {
+  @action switchLang = (mode) => {
     this.displayEnglish = !this.displayEnglish;
+    mode === "init" || notification.success({
+      message: this.displayEnglish ? "Language switch successfully" : "语言切换成功",
+      description: this.displayEnglish ?
+        "You may also need to modify config.ini to change the language of the event list."
+        :
+        "你可能还需要修改 config.ini 中的配置以修改事件列表的语言."
+    })
   };
-
 }

@@ -12,7 +12,7 @@ export default class App extends Component {
 
   componentDidMount() {
     if (navigator.language === "zh-CN") {
-      this.props.store.GlobalStore.switchLang();
+      this.props.store.GlobalStore.switchLang("init");
     }
   }
 
