@@ -1,6 +1,6 @@
-import React, { Component } from "react";
-import { inject, observer } from "mobx-react";
-import { Card, Button } from "antd";
+import React, {Component} from "react";
+import {inject, observer} from "mobx-react";
+import {Button, Card} from "antd";
 
 @inject("store")
 @observer
@@ -24,7 +24,8 @@ export default class EventSelector extends Component {
 
   render() {
     return this.thisStore.eventDefinition ? (
-      <Card title="Events" type="inner" bordered className="children-card">
+      <Card title={this.thisStore.rootStore.GlobalStore.displayEnglish ? "Events" : "事件"} type="inner" bordered
+            className="children-card">
         {this.renderEventButtons()}
       </Card>
     ) : null;

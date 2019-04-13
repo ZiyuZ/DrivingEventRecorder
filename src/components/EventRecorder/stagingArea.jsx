@@ -1,7 +1,7 @@
 import React, {Component} from "react";
 import {inject, observer} from "mobx-react";
 import dayjs from "dayjs";
-import {List, Button, Popconfirm, Card, Empty, Icon, Tooltip} from "antd";
+import {Button, Card, Empty, Icon, List, Popconfirm, Tooltip} from "antd";
 import utils from "../../utils/utils"
 
 @inject("store")
@@ -96,7 +96,7 @@ export default class StagingArea extends Component {
   render() {
     return (
       <Card
-        title="Staging Area"
+        title={this.thisStore.rootStore.GlobalStore.displayEnglish ? "Staging Area" : "暂存区"}
         type="inner"
         bordered
         className="children-card"
