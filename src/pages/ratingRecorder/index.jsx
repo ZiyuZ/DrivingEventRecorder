@@ -82,10 +82,7 @@ export default class RatingRecorder extends Component {
 
 
   render() {
-    const {
-      lastRatingInfo,
-      raterDefinition
-    } = this.thisStore;
+    const {lastRatingInfo, raterDefinition} = this.thisStore;
     const {displayEnglish} = this.thisStore.rootStore.GlobalStore;
     const lastRatingString = lastRatingInfo.type ?
       `[${
