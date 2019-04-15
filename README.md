@@ -57,5 +57,6 @@
 - [ ] 评分下载
 - [ ] 评分界面绘制曲线图
 - [ ] 在首页对应用进行配置
+- [ ] 在数据视图模块新增按特征查询功能
 
 > 我会尽可能逐渐添加必要的新特性, 但无法对进展做出保证. 如果你的确非常需要某些功能, 请前往 [Issue 页面](https://github.com/zhzyX/DrivingEventRecorder/issues) 提交新的请求, 或者直接 [与我联系](mailto:i@zhzyx.me).
