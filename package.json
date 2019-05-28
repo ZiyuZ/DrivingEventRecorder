@@ -3,13 +3,13 @@
   "version": "0.13.1",
   "private": true,
   "devDependencies": {
-    "babel-plugin-import": "^1.11.0",
+    "babel-plugin-import": "^1.11.2",
     "customize-cra": "^0.2.12",
     "less": "^3.9.0",
-    "less-loader": "^4.1.0",
+    "less-loader": "^5.0.0",
     "mobx-react-devtools": "^6.1.1",
     "react-app-rewired": "^2.1.1",
-    "react-scripts": "^2.1.8"
+    "react-scripts": "^3.0.1"
   },
   "dependencies": {
     "antd": "^3.15.1",
@@ -20,7 +20,7 @@
     "react": "^16.8.4",
     "react-csv": "^1.1.1",
     "react-dom": "^16.8.4",
-    "react-player": "^1.9.3",
+    "react-player": "^1.11.0",
     "react-router-dom": "^5.0.0"
   },
   "scripts": {
