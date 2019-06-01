@@ -40,8 +40,6 @@ func initEngine() *gin.Engine {
 		storage := api.Group("/storage")
 		{
 			storage.GET("/definition", getEventDefinition)
-			storage.GET("/video", getVideoList)
-			storage.GET("/trajectory", getTrajectoryList)
 			storage.GET("/file_system", getDataStorageFiles)
 		}
 
@@ -52,6 +50,12 @@ func initEngine() *gin.Engine {
 		api.GET("/rating", getRating)
 		api.POST("/rating", postRating)
 		api.DELETE("/rating", deleteRating)
+
+		storage.GET("/video", getVideoList)
+		storage.PUT("/video", putVideo)
+
+		storage.GET("/trajectory", getTrajectoryList)
+		storage.PUT("/trajectory", putTrajectory)
 	}
 
 	fmt.Println("Router initialized.")

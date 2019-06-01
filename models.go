@@ -85,6 +85,13 @@ func insertVideo(video *Video) (err error) {
 	return DB.Create(video).Error
 }
 
+func updateVideo(video *Video) (err error) {
+	if err = DB.First(&video).Error; err != nil {
+		return
+	}
+	return DB.Save(&video).Error
+}
+
 func queryTrajectories() (trajectories []Trajectory, err error) {
 	err = DB.Find(&trajectories).Error
 	return
@@ -100,4 +107,11 @@ func insertTrajectoryIfNotExist(trajectory *Trajectory) (err error) {
 
 func insertTrajectory(trajectory *Trajectory) (err error) {
 	return DB.Create(trajectory).Error
+}
+
+func updateTrajectory(trajectory *Trajectory) (err error) {
+	if err = DB.First(&trajectory).Error; err != nil {
+		return
+	}
+	return DB.Save(&trajectory).Error
 }

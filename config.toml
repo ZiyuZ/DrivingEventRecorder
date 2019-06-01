@@ -12,5 +12,5 @@ database_path = "recorder.db"
 data_path = "./data"  # data directory path
 
 [server]
-port = 5000
+port = 50000
 public_path = "./public"  # frontend resources path

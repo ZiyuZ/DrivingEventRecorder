@@ -118,11 +118,11 @@ func getRating(c *gin.Context) {
 }
 
 func postRating(c *gin.Context) {
-	rating := new(Rating)
+	var rating Rating
 	if err := c.Bind(rating); err != nil {
 		errorReport(c, err, http.StatusBadRequest, 2, "Bad Rating structure: %v")
 	}
-	if err := insertRating(rating); err != nil {
+	if err := insertRating(&rating); err != nil {
 		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to insert Rating: %v")
 	} else {
 		c.JSON(http.StatusOK, &Response{0, "Add Rating successfully", nil})
@@ -138,5 +138,29 @@ func deleteRating(c *gin.Context) {
 		errorReport(c, err, http.StatusBadRequest, 2, "Failed to delete Rating: %v.")
 	} else {
 		c.JSON(http.StatusOK, &Response{0, "Delete Rating successfully", nil})
+	}
+}
+
+func putVideo(c *gin.Context) {
+	var video Video
+	if err := c.Bind(video); err != nil {
+		errorReport(c, err, http.StatusBadRequest, 2, "Bad Rating structure: %v")
+	}
+	if err := updateVideo(&video); err != nil {
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to insert Rating: %v")
+	} else {
+		c.JSON(http.StatusOK, &Response{0, "Add Rating successfully", nil})
+	}
+}
+
+func putTrajectory(c *gin.Context) {
+	var trajectory Trajectory
+	if err := c.Bind(trajectory); err != nil {
+		errorReport(c, err, http.StatusBadRequest, 2, "Bad Rating structure: %v")
+	}
+	if err := updateTrajectory(&trajectory); err != nil {
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to insert Rating: %v")
+	} else {
+		c.JSON(http.StatusOK, &Response{0, "Add Rating successfully", nil})
 	}
 }

@@ -1,9 +1,6 @@
 # build file & binfile
 *.exe
-*.dll
-*.def
 build/
-dist/
 tmp/
 
 #static file
@@ -14,7 +11,7 @@ test*
 
 # mock data
 *.db
-videos/
+data/
 
 # log file
 *.log
@@ -25,4 +22,6 @@ videos/
 
 # golang dependences
 *.sum
-vendor/
+
+# dev tools
+air.toml
