@@ -1,203 +1,103 @@
 package main
 
+import (
+	"github.com/jinzhu/gorm"
+	"time"
+)
+
 type (
-	// Recorded event struct in driving behavior experiment
 	Event struct {
-		ID             int    `json:"id"`
-		EventID        int    `json:"event_id"`
-		EventCode      string `json:"event_code"`
-		StartTimestamp int    `json:"start_timestamp"`
-		StopTimestamp  int    `json:"stop_timestamp"`
-		Description    string `json:"description"`
+		gorm.Model
+		EventID    int       `json:"event_id"`
+		OptionCode string    `json:"option_code" `
+		StartTime  time.Time `json:"start_time"`
+		StopTime   time.Time `json:"stop_time"`
+		Desc       string    `json:"desc"`
 	}
 
-	// Definition struct of events
-	EventType struct {
-		EventID     int    `json:"event_id"`
-		Description string `json:"description"`
+	Video struct {
+		gorm.Model
+		FileName         string    `json:"file_name"`
+		Path             string    `json:"path"`
+		BeginTime        time.Time `json:"start_time"`
+		EndTime          time.Time `json:"end_time"`
+		Type             string    `json:"type"` // A: outside (front); B: inside
+		VideoGPSTimeDiff int       `json:"video_gps_time_diff"`
 	}
 
-	EventOption struct {
-		OptionID    int    `json:"option_id"`
-		Description string `json:"description"`
-	}
-
-	EventOptionGroup struct {
-		GroupID      int           `json:"group_id"`
-		GroupType    string        `json:"group_type"`
-		EventOptions []EventOption `json:"event_options"`
-	}
-
-	EventDefinition struct {
-		EventType
-		EventOptionGroups []EventOptionGroup `json:"event_option_groups"`
+	Trajectory struct {
+		gorm.Model
+		FileName  string    `json:"file_name"`
+		Path      string    `json:"path"`
+		BeginTime time.Time `json:"start_time"`
+		EndTime   time.Time `json:"end_time"`
 	}
 
 	Rating struct {
-		ID          int    `json:"id"`
-		Type        int    `json:"type"`
-		Timestamp   int    `json:"timestamp"`
-		RatingLevel int    `json:"rating_level"`
-		Description string `json:"description"`
+		gorm.Model
+		Type  int       `json:"type"`
+		Time  time.Time `json:"time"`
+		Grade int       `json:"grade"`
+		Desc  string    `json:"desc"`
 	}
 )
 
-func queryEventDefinitions() ([]EventDefinition, error) {
-	eventTypes, err := queryEventType()
-	if err != nil {
-		return nil, err
-	}
-	if err != nil {
-		return nil, err
-	}
-	var eventDefinitions []EventDefinition
-	for _, v := range eventTypes {
-		eventOptionGroups, err := getEventOptionGroupsByEventID(v.EventID)
-		if err != nil {
-			return nil, err
-		}
-		e := EventDefinition{v, eventOptionGroups}
-		eventDefinitions = append(eventDefinitions, e)
-	}
-
-	return eventDefinitions, nil
+func queryEvents() (events []Event, err error) {
+	err = DB.Find(&events).Error
+	return
 }
 
-func queryEventType() ([]EventType, error) {
-	eventTypeSchema := "SELECT id, description FROM event_type"
-	rows, err := DB.Query(eventTypeSchema)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			E.Logger.Fatal(err)
-		}
-	}()
-	var eventTypes []EventType
-	for rows.Next() {
-		var e EventType
-		err := rows.Scan(&e.EventID, &e.Description)
-		if err != nil {
-			return nil, err
-		}
-		eventTypes = append(eventTypes, e)
-	}
-	return eventTypes, nil
+func insertEvent(e *Event) (err error) {
+	return DB.Create(e).Error
 }
 
-func getEventOptionGroupsByEventID(eventID int) ([]EventOptionGroup, error) {
-	eventOptionSchema := "SELECT group_id, group_type, id, description FROM event_option WHERE event_id = $1"
-	rows, err := DB.Query(eventOptionSchema, eventID)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			E.Logger.Fatal(err)
-		}
-	}()
-	var eventOptionGroups []EventOptionGroup
-	for rows.Next() {
-		// get options
-		var groupId int
-		var groupType string
-		var optionId int
-		var description string
-		err := rows.Scan(&groupId, &groupType, &optionId, &description)
-		if err != nil {
-			return nil, err
-		}
-		// add event option group if not contain this event option group
-		thisEventOptionGroup := EventOptionGroup{groupId, groupType, []EventOption{}}
-		groupIsExist := false
-		for _, v := range eventOptionGroups {
-			if v.GroupID == groupId {
-				groupIsExist = true
-				break
-			}
-		}
-		if !groupIsExist {
-			eventOptionGroups = append(eventOptionGroups, thisEventOptionGroup)
-		}
-		// add event option into event groups
-		for i, v := range eventOptionGroups {
-			if v.GroupID == groupId {
-				eventOptionGroups[i].EventOptions = append(v.EventOptions, EventOption{optionId, description})
-			}
-		}
-	}
-	return eventOptionGroups, nil
+func deleteEventById(id int) (err error) {
+	return DB.Where("id = ?", id).Delete(&Event{}).Error
 }
 
-func queryEvent() (event []Event, err error) {
-	querySchema := "SELECT id, event_id, event_code, start_timestamp, stop_timestamp, description FROM event"
-	rows, err := DB.Query(querySchema)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			E.Logger.Fatal(err)
-		}
-	}()
-	for rows.Next() {
-		var e Event
-		err = rows.Scan(&e.ID, &e.EventID, &e.EventCode, &e.StartTimestamp, &e.StopTimestamp, &e.Description)
-		if err != nil {
-			return nil, err
-		}
-		event = append(event, e)
+func queryRatings() (ratings []Rating, err error) {
+	err = DB.Find(&ratings).Error
+	return
+}
+
+func insertRating(rating *Rating) (err error) {
+	return DB.Create(rating).Error
+}
+
+func deleteRatingByID(id int) (err error) {
+	return DB.Where("id = ?", id).Delete(&Rating{}).Error
+}
+
+func queryVideos() (videos []Video, err error) {
+	err = DB.Find(&videos).Error
+	return
+}
+
+func insertVideoIfNotExist(video *Video) (err error) {
+	var videoFounded Video
+	if DB.Where("path = ?", video.Path).First(&videoFounded).RecordNotFound() {
+		return insertVideo(video)
 	}
 	return
 }
 
-func insertEvent(e *Event) error {
-	insertSchema := "INSERT INTO event (event_id, event_code, start_timestamp, stop_timestamp, description) VALUES ($1, $2, $3, $4, $5)"
-	_, err := DB.Exec(insertSchema, e.EventID, e.EventCode, e.StartTimestamp, e.StopTimestamp, e.Description)
-	return err
+func insertVideo(video *Video) (err error) {
+	return DB.Create(video).Error
 }
 
-func deleteEventById(id int) error {
-	deleteSchema := "DELETE FROM event WHERE id = $1"
-	_, err := DB.Exec(deleteSchema, id)
-	return err
+func queryTrajectories() (trajectories []Trajectory, err error) {
+	err = DB.Find(&trajectories).Error
+	return
 }
 
-func queryRating() (ratings []Rating, err error) {
-	querySchema := "SELECT id, type, timestamp, rating_level, description FROM rating"
-	rows, err := DB.Query(querySchema)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		err := rows.Close()
-		if err != nil {
-			E.Logger.Fatal(err)
-		}
-	}()
-	for rows.Next() {
-		var rating Rating
-		err = rows.Scan(&rating.ID, &rating.Type, &rating.Timestamp, &rating.RatingLevel, &rating.Description)
-		if err != nil {
-			return nil, err
-		}
-		ratings = append(ratings, rating)
+func insertTrajectoryIfNotExist(trajectory *Trajectory) (err error) {
+	var videoFounded Video
+	if DB.Where("path = ?", trajectory.Path).Find(&videoFounded).RecordNotFound() {
+		return insertTrajectory(trajectory)
 	}
 	return
 }
 
-func insertRating(rating *Rating) error {
-	insertSchema := "INSERT INTO rating (type, timestamp, rating_level, description) VALUES ($1, $2, $3, $4)"
-	_, err := DB.Exec(insertSchema, rating.Type, rating.Timestamp, rating.RatingLevel, rating.Description)
-	return err
-}
-
-func deleteRatingByID(id int) error {
-	deleteSchema := "DELETE FROM rating WHERE id = $1"
-	_, err := DB.Exec(deleteSchema, id)
-	return err
+func insertTrajectory(trajectory *Trajectory) (err error) {
+	return DB.Create(trajectory).Error
 }

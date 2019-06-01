@@ -3,11 +3,9 @@ echo Start building program...
 IF EXIST build (rd build /S /Q)
 mkdir build
 mkdir build\public
-echo Copy database files...
-xcopy db build\db\ /S /Q
-del build\db\*.db /Q
 echo Copy configuration...
-xcopy *.ini build /Q
+xcopy config.toml build /Q
+xcopy definition.json build /Q
 echo Build program...
 go build -o build\recorder.exe
 echo done.

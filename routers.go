@@ -2,49 +2,48 @@ package main
 
 import (
 	"fmt"
-	"github.com/labstack/echo"
-	"github.com/labstack/echo/middleware"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-contrib/static"
+	"github.com/gin-gonic/gin"
+	"io"
 	"os"
 )
 
-func initEcho() *echo.Echo {
-	e := echo.New()
-	e.HideBanner = true
-
+func initEngine() *gin.Engine {
+	e := gin.New()
+	if !C.Debug {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	// logger middleware
 	if C.Log {
+		gin.DisableConsoleColor()
 		fp, err := os.OpenFile(C.LogPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
-			fmt.Printf("Failed to open file: %v\n", C.LogPath)
+			fmt.Printf("Failed to open log file: %v\n", C.LogPath)
 			os.Exit(1)
 		}
-		e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-			Format: "${time_rfc3339} method=${method}, uri=${uri}, status=${status}\n",
-			Output: fp,
-		}))
-	} else {
-		e.Use(middleware.LoggerWithConfig(middleware.LoggerConfig{
-			Format: "${time_rfc3339} method=${method}, uri=${uri}, status=${status}\n",
-		}))
-	}
-	e.Logger.SetHeader("${time_rfc3339} [${level}] <${short_file}:${line}> ${message}")
+		gin.DefaultWriter = io.MultiWriter(fp)
+	} // else gin.DefaultWriter = os.Stdout
+	e.Use(gin.Logger())
+	e.Use(gin.Recovery())
+	e.Use(cors.Default())
 
-	// CORS middleware
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-	}))
-
-	// static file router
-	e.Static("/", C.PublicPath)
-	e.Static("/video", C.VideoPath)
+	// static file
+	e.Use(static.Serve("/", static.LocalFile(C.PublicPath, true)))
+	e.Use(static.Serve("/data", static.LocalFile(C.DataPath, true)))
 
 	// api router
 	api := e.Group("/api")
 	{
 		api.GET("/ping", ping)
-		api.GET("/event_definition", getEventDefinition)
-		api.GET("/video_list", getVideoList)
+
+		storage := api.Group("/storage")
+		{
+			storage.GET("/definition", getEventDefinition)
+			storage.GET("/video", getVideoList)
+			storage.GET("/trajectory", getTrajectoryList)
+			storage.GET("/file_system", getDataStorageFiles)
+		}
 
 		api.GET("/event", getEvent)
 		api.POST("/event", postEvent)

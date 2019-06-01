@@ -4,6 +4,7 @@
 *.def
 build/
 dist/
+tmp/
 
 #static file
 public/

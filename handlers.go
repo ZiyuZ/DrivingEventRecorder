@@ -3,7 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
-	"github.com/labstack/echo"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 )
@@ -14,95 +14,129 @@ type Response struct {
 	Data    interface{} `json:"data"`
 }
 
-func ping(c echo.Context) error {
-	return c.JSON(http.StatusOK, &Response{0, "pong", nil})
+func ping(c *gin.Context) {
+	c.JSON(http.StatusOK, &Response{0, "pong", nil})
 }
 
-func errorReport(c echo.Context, err error, httpErrorCode int, returnCode int, messageFormat string) error {
+func errorReport(c *gin.Context, err error, httpErrorCode int, returnCode int, messageFormat string) {
 	message := fmt.Sprintf(messageFormat, err)
-	E.Logger.Error(message)
-	return c.JSON(httpErrorCode, &Response{returnCode, message, nil})
+	writeLog("ERROR", message)
+	c.JSON(httpErrorCode, &Response{returnCode, message, nil})
 }
 
-func getEventDefinition(c echo.Context) error {
-	data, err := queryEventDefinitions()
-	if err != nil {
-		return errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read events definition: %v.")
-	}
-	return c.JSON(http.StatusOK, &Response{0, "Read events definition successfully", data})
+func getEventDefinition(c *gin.Context) {
+	c.JSON(http.StatusOK, &Response{0, "Read events definition successfully", D})
 }
 
-func getVideoList(c echo.Context) error {
-	data, err := GetFileListByPath()
+func getVideoList(c *gin.Context) {
+	data, err := queryVideos()
 	if err != nil {
-		return errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read video list: %v.")
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read video list: %v.")
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Read video list successfully", data})
-}
-
-func getEvent(c echo.Context) error {
-	data, err := queryEvent()
-	if err != nil {
-		return errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read event: %v.")
-	}
+	var message string
 	if len(data) == 0 {
-		return c.JSON(http.StatusOK, &Response{0, "No events.", []int{}})
+		message = "No videos."
+	} else {
+		message = "Read video list successfully"
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Get events successfully", data})
+	c.JSON(http.StatusOK, &Response{0, message, data})
 }
 
-func postEvent(c echo.Context) error {
-	e := new(Event)
-	if err := c.Bind(e); err != nil {
-		return errorReport(c, err, http.StatusBadRequest, 2, "Bad event structure: %v.")
+func getTrajectoryList(c *gin.Context) {
+	data, err := queryTrajectories()
+	if err != nil {
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read video list: %v.")
 	}
-	if e.StartTimestamp == 0 || e.StopTimestamp == 0 || e.EventID == 0 {
-		return errorReport(c, errors.New("event type or timestamps should not be null"),
+	var message string
+	if len(data) == 0 {
+		message = "No trajectories."
+	} else {
+		message = "Read trajectories list successfully"
+	}
+	c.JSON(http.StatusOK, &Response{0, message, data})
+}
+
+func getDataStorageFiles(c *gin.Context) {
+	c.JSON(http.StatusOK, &Response{0, "Read data storage files successfully", F})
+}
+
+func getEvent(c *gin.Context) {
+	data, err := queryEvents()
+	if err != nil {
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read event: %v.")
+	}
+	var message string
+	if len(data) == 0 {
+		message = "No events."
+	} else {
+		message = "Get events successfully"
+	}
+	c.JSON(http.StatusOK, &Response{0, message, data})
+}
+
+func postEvent(c *gin.Context) {
+	var e Event
+	if err := c.Bind(&e); err != nil {
+		errorReport(c, err, http.StatusBadRequest, 2, "Bad event structure: %v.")
+	}
+	if e.StartTime.IsZero() || e.EventID == 0 {
+		errorReport(c, errors.New("event type or timestamps should not be null"),
 			http.StatusBadRequest, 2, "Bad event structure: %v")
 	}
-	if err := insertEvent(e); err != nil {
-		return errorReport(c, err, http.StatusInternalServerError, 1, "Failed to insert event: %v.")
+	if err := insertEvent(&e); err != nil {
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to insert event: %v.")
+	} else {
+		c.JSON(http.StatusOK, &Response{0, "Add event successfully", nil})
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Add event successfully", nil})
+
 }
 
-func deleteEvent(c echo.Context) error {
-	id, err := strconv.Atoi(c.QueryParam("id"))
+func deleteEvent(c *gin.Context) {
+	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
-		return errorReport(c, err, http.StatusBadRequest, 2, "Unknown id format: %v.")
+		errorReport(c, err, http.StatusBadRequest, 2, "Unknown id format: %v.")
 	}
 	if err := deleteEventById(id); err != nil {
-		return errorReport(c, err, http.StatusBadRequest, 2, "Failed to delete event: %v.")
+		errorReport(c, err, http.StatusBadRequest, 2, "Failed to delete event: %v.")
+	} else {
+		c.JSON(http.StatusOK, &Response{0, "Delete event successfully", nil})
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Delete event successfully", nil})
 }
 
-func getRating(c echo.Context) error {
-	data, err := queryRating()
+func getRating(c *gin.Context) {
+	data, err := queryRatings()
 	if err != nil {
-		return errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read Ratings: %v")
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read Ratings: %v")
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Get Ratings successfully", data})
+	var message string
+	if len(data) == 0 {
+		message = "No ratings."
+	} else {
+		message = "Read ratings list successfully"
+	}
+	c.JSON(http.StatusOK, &Response{0, message, data})
 }
 
-func postRating(c echo.Context) error {
+func postRating(c *gin.Context) {
 	rating := new(Rating)
 	if err := c.Bind(rating); err != nil {
-		return errorReport(c, err, http.StatusBadRequest, 2, "Bad Rating structure: %v")
+		errorReport(c, err, http.StatusBadRequest, 2, "Bad Rating structure: %v")
 	}
 	if err := insertRating(rating); err != nil {
-		return errorReport(c, err, http.StatusInternalServerError, 1, "Failed to insert Rating: %v")
+		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to insert Rating: %v")
+	} else {
+		c.JSON(http.StatusOK, &Response{0, "Add Rating successfully", nil})
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Add Rating successfully", nil})
 }
 
-func deleteRating(c echo.Context) error {
-	id, err := strconv.Atoi(c.QueryParam("id"))
+func deleteRating(c *gin.Context) {
+	id, err := strconv.Atoi(c.Query("id"))
 	if err != nil {
-		return errorReport(c, err, http.StatusBadRequest, 2, "Unknown id format: %v.")
+		errorReport(c, err, http.StatusBadRequest, 2, "Unknown id format: %v.")
 	}
 	if err := deleteRatingByID(id); err != nil {
-		return errorReport(c, err, http.StatusBadRequest, 2, "Failed to delete rating: %v.")
+		errorReport(c, err, http.StatusBadRequest, 2, "Failed to delete Rating: %v.")
+	} else {
+		c.JSON(http.StatusOK, &Response{0, "Delete Rating successfully", nil})
 	}
-	return c.JSON(http.StatusOK, &Response{0, "Delete Rating successfully", nil})
 }

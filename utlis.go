@@ -1,11 +1,15 @@
 package main
 
 import (
-	//"encoding/json"
+	"encoding/json"
 	"fmt"
-	"github.com/jmoiron/sqlx"
+	"github.com/fsnotify/fsnotify"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/olekukonko/tablewriter"
-	"gopkg.in/ini.v1"
+	"github.com/spf13/viper"
+	"io/ioutil"
 	"net"
 	"os"
 	"os/exec"
@@ -15,97 +19,172 @@ import (
 	"time"
 )
 
-var confPath = "config.ini"
+type (
+	config struct {
+		CallBrowser bool
 
-type config struct {
-	Debug       bool `json:"debug"`
-	CallBrowser bool `json:"call_browser"`
+		Debug   bool
+		Log     bool
+		LogPath string
 
-	DatabasePath string `json:"database_path"`
-	PublicPath   string `json:"public_path"`
-	VideoPath    string `json:"video_path"`
+		EventDefinition string
+		DatabasePath    string
+		DataPath        string
 
-	ServerPort int    `json:"server_port"`
-	Log        bool   `json:"log"`
-	LogPath    string `json:"log_path"`
+		Port       int
+		PublicPath string
+
+		AppVersion string
+	}
+
+	// definition.json
+	RawCategory struct {
+		ID   int      `json:"id"`
+		Desc []string `json:"desc"`
+	}
+	RawOption struct {
+		ID        int      `json:"id"`
+		EventID   int      `json:"event_id"`
+		GroupID   int      `json:"group_id"`
+		GroupType string   `json:"group_type"`
+		Desc      []string `json:"desc"`
+	}
+	RawDefinition struct {
+		Category []RawCategory `json:"category"`
+		Option   []RawOption   `json:"option"`
+	}
+
+	// response definition struct of events
+	definition struct {
+		EventID      int           `json:"event_id"`
+		Desc         []string      `json:"desc"`
+		OptionGroups []OptionGroup `json:"option_groups"`
+	}
+	OptionGroup struct {
+		GroupID   int      `json:"group_id"`
+		GroupType string   `json:"group_type"`
+		Options   []Option `json:"options"`
+	}
+	Option struct {
+		OptionID int      `json:"option_id"`
+		Desc     []string `json:"desc"`
+	}
+
+	// file
+	File struct {
+		Name    string    `json:"name"`
+		ExtName string    `json:"ext_name"`
+		Date    time.Time `json:"date"`
+	}
+
+	Folder struct {
+		Name      string    `json:"name"`
+		Path      string    `json:"path"`
+		Date      time.Time `json:"date"`
+		SubFile   []File    `json:"sub_file"`
+		SubFolder []Folder  `json:"sub_folder"`
+	}
+)
+
+func writeLog(level string, content interface{}) {
+	level = strings.ToUpper(level)
+	if C.Debug || level != "DEBUG" {
+		_, _ = fmt.Fprintln(gin.DefaultWriter,
+			fmt.Sprintf("[GIN:%s] %v |%s \n", level, time.Now().Format("2006/01/02 - 15:04:05"), content))
+	}
+
+	if level == "FATAL" {
+		os.Exit(1)
+	}
 }
 
-func checkDirPath(in string) string {
-	pathInfo, err := os.Stat(in)
+func insertOption(groups *[]OptionGroup, option RawOption) {
+	for i, v := range *groups {
+		if v.GroupID == option.GroupID {
+			(*groups)[i].Options = append(v.Options, Option{option.ID, option.Desc})
+			return // existing group was found and inserted successfully
+		}
+	}
+	// group not exist
+	*groups = append(*groups, OptionGroup{
+		option.GroupID,
+		option.GroupType,
+		[]Option{{option.ID, option.Desc}},
+	})
+}
+
+func parseEventDefinition(rd *RawDefinition) (definitions []definition) {
+	// Option allows out-of-order thus dual loops is required
+	for _, c := range rd.Category {
+		optionGroups := &[]OptionGroup{}
+		for _, o := range rd.Option {
+			if o.EventID == c.ID {
+				insertOption(optionGroups, o)
+			}
+		}
+		definitions = append(definitions, definition{c.ID, c.Desc, *optionGroups})
+	}
+	return
+}
+
+func loadDefinition() []definition {
+	// read definition file
+	bytes, err := ioutil.ReadFile(C.EventDefinition)
 	if err != nil {
-		fmt.Printf("Invalid file: %v\n", err)
+		fmt.Println("Error when read definition file: ", err.Error())
 		os.Exit(1)
 	}
-	if !pathInfo.IsDir() {
-		fmt.Printf("Invalid directory path: %v\n", in)
+	// parse raw definition
+	rd := &RawDefinition{}
+	err = json.Unmarshal(bytes, rd)
+	if err != nil {
+		fmt.Println("Error when unmarshal definition: ", err.Error())
 		os.Exit(1)
 	}
-	return in
+	return parseEventDefinition(rd)
 }
 
 func readConf() *config {
-	cfg, err := ini.LoadSources(ini.LoadOptions{
-		SkipUnrecognizableLines: true,
-	}, confPath)
-	if err != nil {
-		fmt.Printf("Fail to read config file: %v\n", err)
+	viper.SetConfigName("config")
+	viper.AddConfigPath(".")
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		fmt.Println("Config file changed:", e.Name)
+	})
+	err := viper.ReadInConfig()
+	if err != nil { // Handle errors reading the config file
+		fmt.Println(fmt.Errorf("Fatal error config file: %s \n", err))
 		os.Exit(1)
 	}
-
-	logFlag := cfg.Section("server").Key("log").MustBool(false)
 	c := &config{
-		Debug:       cfg.Section("dev").Key("debug").MustBool(false),
-		CallBrowser: cfg.Section("dev").Key("call_browser").MustBool(true),
-		DatabasePath: cfg.Section("resource").Key("database_path").Validate(func(databasePath string) string {
-			pathInfo, err := os.Stat(databasePath)
-			if os.IsNotExist(err) {
-				fmt.Printf("Database file not found. Attempting to create database: %v\n", databasePath)
-				executablePath := cfg.Section("database").Key("executable").MustString(
-					filepath.Join(".", "db", "sqlite3"))
-				sqlPath := cfg.Section("database").Key("init_script").MustString(
-					filepath.Join(".", "db", "init_db.sql"))
-				err := exec.Command("cmd", "/c", executablePath, databasePath, "<", sqlPath).Start()
-				if err == nil {
-					time.Sleep(3 * time.Second)
-					fmt.Println("Initialized database successfully.")
-					return databasePath
-				} else {
-					fmt.Printf("Failed to create database: %v\n", err)
-					os.Exit(1)
-				}
-			} else if err != nil {
-				fmt.Printf("Invalid file: %v\n", err)
-			} else if pathInfo.IsDir() {
-				fmt.Printf("Database path points to a directory: %v\n", databasePath)
-				os.Exit(1)
-			}
-			return databasePath
-		}),
-		PublicPath: cfg.Section("resource").Key("public_path").Validate(checkDirPath),
-		VideoPath:  cfg.Section("resource").Key("video_path").Validate(checkDirPath),
-		ServerPort: cfg.Section("server").Key("port").MustInt(5000),
-		Log:        logFlag,
-		LogPath: cfg.Section("server").Key("log_path").Validate(func(in string) string {
-			if !logFlag {
-				return "unavailable"
-			}
-			f, err := os.OpenFile(in, os.O_CREATE, 0666)
-			if err != nil {
-				fmt.Printf("Fail to create log file: %v\n", in)
-				os.Exit(1)
-			}
-			_ = f.Close()
-			return in
-		}),
+		viper.GetBool("main.call_borwser"),
+		viper.GetBool("dev.debug"),
+		viper.GetBool("dev.log"),
+		viper.GetString("dev.log_path"),
+		viper.GetString("data.definition_path"),
+		viper.GetString("data.database_path"),
+		viper.GetString("data.data_path"),
+		viper.GetInt("server.port"),
+		viper.GetString("server.public_path"),
+		_VERSION_,
+	}
+	// Set the database in memory when debug is on
+	if c.Debug {
+		c.DatabasePath = ":memory:"
+		fmt.Println("Warning: you are in Debug mode and no data will be saved.")
+	}
+	if !c.Log {
+		c.LogPath = "unavailable"
 	}
 	fmt.Println("Configurations read successfully.")
 	data := [][]string{
+		{"Version", c.AppVersion},
 		{"Debug", strconv.FormatBool(c.Debug)},
 		{"CallBrowser", strconv.FormatBool(c.CallBrowser)},
+		{"EventDefinitionPath", c.EventDefinition},
 		{"DatabasePath", c.DatabasePath},
 		{"PublicPath", c.PublicPath},
-		{"VideoPath", c.VideoPath},
-		{"ServerPort", strconv.Itoa(c.ServerPort)},
+		{"DataPath", c.DataPath},
+		{"ServerPort", strconv.Itoa(c.Port)},
 		{"Log", strconv.FormatBool(c.Log)},
 		{"LogPath", c.LogPath},
 	}
@@ -122,24 +201,25 @@ func readConf() *config {
 	return c
 }
 
-func connectDB() *sqlx.DB {
-	db, err := sqlx.Open("sqlite3", C.DatabasePath)
+func connectDB() *gorm.DB {
+	db, err := gorm.Open("sqlite3", C.DatabasePath)
 	if err != nil {
-		E.Logger.Fatal(err)
+		writeLog("FATAL", err)
 	}
-	if err := db.Ping(); err != nil {
-		E.Logger.Fatal(err)
+	if err := db.DB().Ping(); err != nil {
+		writeLog("FATAL", err)
 	}
 	fmt.Println("Database connected.")
+	db.AutoMigrate(&Event{}, &Video{}, &Trajectory{}, &Rating{})
 	return db
 }
 
-func callBrowser(ifCallBrowser bool) {
-	fmt.Printf("\nPlease visit \"http://localhost:%v\" in your browser on the local computer.\n", C.ServerPort)
+func callUserInterface(callBrowser bool) {
+	fmt.Printf("\nPlease visit \"http://localhost:%v\" in your browser on the local computer.\n", C.Port)
 	fmt.Printf("Or through an intranet address for other devices in the LAN:\n"+
 		"\t1. Run \"ipconfig /all\" in your terminal and view IP addresses.\n"+
 		"\t2. Find the local address of the intranet where the target device is located.\n"+
-		"\t3. Visit \"http://[This PC's IP address]:%v\" on the target device.\n", C.ServerPort)
+		"\t3. Visit \"http://[This PC's IP address]:%v\" on the target device.\n", C.Port)
 	ifaces, _ := net.Interfaces()
 	fmt.Printf("\t(Maybe you can try: ")
 	for _, i := range ifaces {
@@ -148,33 +228,120 @@ func callBrowser(ifCallBrowser bool) {
 		for _, addr := range addrs {
 			ipnet, _ := addr.(*net.IPNet)
 			if ipnet.IP.IsGlobalUnicast() {
-				fmt.Printf(" \"http://%v:5000\"", ipnet.IP.To4())
+				fmt.Printf(" \"http://%v:%v\"", ipnet.IP.To4(), C.Port)
 			}
 		}
 	}
 	fmt.Printf(")\n")
 
-	if ifCallBrowser {
-		cmd := fmt.Sprintf("/c start http://localhost:%v", C.ServerPort)
+	if callBrowser {
+		cmd := fmt.Sprintf("/c start http://localhost:%v", C.Port)
 		err := exec.Command("cmd", cmd).Start()
 		if err != nil {
+			writeLog("WARN", err)
 			return
 		}
 	}
 }
 
-func GetFileListByPath() (fileList []string, err error) {
-	dirPath := C.VideoPath
-	err = filepath.Walk(dirPath, func(path string, f os.FileInfo, err error) error {
-		if f != nil && !f.IsDir() && strings.Contains(path, ".mp4") {
-			_, file := filepath.Split(path)
-			fileList = append(fileList, file)
-		}
-		return nil
-	})
-	if err != nil {
-		E.Logger.Error("fail")
-		return nil, err
+func TraverseDirectoriesRecursively(folder *Folder, rootDir string) (err error) {
+	var files []os.FileInfo
+	if rootDir == "" {
+		files, err = ioutil.ReadDir(folder.Path)
+	} else {
+		files, err = ioutil.ReadDir(rootDir)
+		folder.Path = rootDir
 	}
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		return err
+	}
+	for _, f := range files {
+		currentFilePath := fmt.Sprintf("%v/%v", folder.Path, f.Name())
+		if f.IsDir() { // traverse directory recursively
+			var date time.Time
+			date, err = time.Parse("060102", f.Name())
+			if err != nil {
+				date = time.Time{}
+			}
+			newSubFolder := Folder{
+				f.Name(),
+				currentFilePath,
+				date,
+				[]File{},
+				[]Folder{},
+			}
+			err = TraverseDirectoriesRecursively(&newSubFolder, "")
+			if err != nil {
+				writeLog("FATAL", err)
+			}
+			folder.SubFolder = append(folder.SubFolder, newSubFolder)
+		} else {
+			file := File{
+				f.Name(),
+				strings.ToLower(filepath.Ext(f.Name())),
+				folder.Date,
+			}
+			folder.SubFile = append(folder.SubFile, file)
+			StoreFileToDatabase(file, currentFilePath)
+		}
+	}
+	return
+}
+
+func StoreFileToDatabase(file File, path string) {
+	if file.ExtName == ".mp4" {
+		videoSplitName := strings.Split(file.Name, "_")
+		var videoBeginTime time.Time
+		var videoEndTime time.Time
+		var videoType string
+		var err error
+		if len(videoSplitName) == 3 {
+			formatDate := file.Date.Format("20060102")
+			videoType = videoSplitName[3]
+			videoBeginTime, err = time.Parse("20060102T150405Z07:00",
+				fmt.Sprintf("%sT%s+08:00", formatDate, videoSplitName[1]))
+			if err != nil {
+				writeLog("WARN", err)
+				videoBeginTime = file.Date
+			}
+
+			videoEndTime, err = time.Parse("20060102T150405Z07:00",
+				fmt.Sprintf("%sT%s+08:00", formatDate, videoSplitName[2]))
+			if err != nil {
+				writeLog("WARN", err)
+				videoEndTime = file.Date
+			}
+		} else {
+			videoBeginTime = time.Time{}
+			videoEndTime = time.Time{}
+			videoType = "Unknown"
+		}
+		if err := insertVideoIfNotExist(&Video{
+			FileName:         file.Name,
+			Path:             path,
+			BeginTime:        videoBeginTime,
+			EndTime:          videoEndTime,
+			Type:             videoType,
+			VideoGPSTimeDiff: 0,
+		}); err != nil {
+			writeLog("FATAL", err)
+		}
+	}
+	if file.ExtName == ".vbo" {
+		if err := insertTrajectoryIfNotExist(&Trajectory{
+			FileName:  file.Name,
+			Path:      path,
+			BeginTime: file.Date,
+			EndTime:   file.Date,
+		}); err != nil {
+			writeLog("FATAL", err)
+		}
+	}
+}
+
+func InitDataStorageFiles() (root *Folder) {
+	root = &Folder{"Public", "", time.Time{}, []File{}, []Folder{}}
+	_ = TraverseDirectoriesRecursively(root, C.DataPath)
 	return
 }

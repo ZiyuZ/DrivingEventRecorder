@@ -1,29 +1,31 @@
 package main
 
 import (
-	"github.com/jmoiron/sqlx"
-	"github.com/labstack/echo"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"strconv"
 )
 
 var (
-	E  *echo.Echo
-	DB *sqlx.DB
 	C  *config
+	D  []definition
+	E  *gin.Engine
+	F  *Folder
+	DB *gorm.DB
+
+	_VERSION_ = "2.0.beta"
 )
 
 func init() {
 	C = readConf()
-	E = initEcho()
+	D = loadDefinition()
 	DB = connectDB()
+	E = initEngine()
+	F = InitDataStorageFiles() // must after database connected
 }
 
 func main() {
-	callBrowser(C.CallBrowser)
-	if C.Debug {
-		E.Logger.Debug(E.Start(":" + strconv.Itoa(C.ServerPort)))
-	} else {
-		E.Logger.Error(E.Start(":" + strconv.Itoa(C.ServerPort)))
-	}
+	callUserInterface(C.CallBrowser)
+	panic(E.Run(":" + strconv.Itoa(C.Port)))
 }

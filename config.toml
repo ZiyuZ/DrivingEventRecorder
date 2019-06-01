@@ -1,0 +1,16 @@
+[main]
+call_browser = false  # open browser automatically when the program starts
+
+[dev]
+debug = true
+log = false
+log_path = "app.log"  # will be ignore if "log" is false
+
+[data]
+definition_path = "definition.json"
+database_path = "recorder.db"
+data_path = "./data"  # data directory path
+
+[server]
+port = 5000
+public_path = "./public"  # frontend resources path
