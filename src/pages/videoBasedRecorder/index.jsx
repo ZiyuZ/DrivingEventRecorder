@@ -16,8 +16,8 @@ export default class VideoBasedRecorder extends Component {
   }
 
   renderVideoListItem = () => {
-    return this.thisStore.videoList.map((videoName) => (
-      <Select.Option value={videoName} key={videoName}>{videoName}</Select.Option>
+    return this.thisStore.videoList.map((videoProps) => (
+      <Select.Option value={videoProps.ID} key={videoProps.ID}>{`${videoProps.ID}. ${videoProps.path} (${videoProps.type})`}</Select.Option>
     ))
   };
 
@@ -36,7 +36,7 @@ export default class VideoBasedRecorder extends Component {
         placeholder={videoList.length === 0 ? "No videos" : "Select a video"}
         optionFilterProp="children"
         onChange={(value) => {
-          this.thisStore.updateVideoProp({key: "name", value})
+          this.thisStore.updateVideoProp({key: "ID", value})
         }}
         filterOption={
           (input, option) =>
@@ -73,7 +73,7 @@ export default class VideoBasedRecorder extends Component {
           disabled={videoProps.isFrozen}
           placeholder="Set video start time"
           onChange={(time) => updateVideoProp({key: "baseTime", value: time})}
-          value={videoProps.baseTime}
+          value={videoProps.baseTime}  // Only receive moment object.
           className="date-pick"
         />
       </Col>

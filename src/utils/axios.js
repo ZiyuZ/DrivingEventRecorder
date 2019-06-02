@@ -8,7 +8,7 @@ export default class Axios {
       axios({
         url: options.url,
         method: options.method,
-        baseURL: options.baseURL || backendConfig.backendApi,
+        baseURL: options.baseURL || backendConfig.backend,
         timeout: 3000,
         params: options.params || "",
         data: options.data || "",
@@ -20,7 +20,7 @@ export default class Axios {
             resolve(res);
           } else {
             Modal.error({
-              title: "错误",
+              title: "Error",
               content: res.message
             });
           }

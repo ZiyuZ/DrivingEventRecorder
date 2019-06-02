@@ -2,6 +2,7 @@ import {action, computed, configure, observable, runInAction} from "mobx";
 import Axios from "../utils/axios";
 import backendConfig from "../config/backendConfig";
 import dayjs from "dayjs";
+import utils from "../utils/utils";
 
 configure({enforceActions: "always"});
 
@@ -10,7 +11,7 @@ export default class RatingRecorderStore {
     this.rootStore = rootStore;
   }
 
-  @observable ratingLevel = [5, 5, 0, 0, 0, 0];
+  @observable grade = [5, 5, 0, 0, 0, 0];
 
   @computed get raterDefinition() {
     const {displayEnglish} = this.rootStore.GlobalStore;
@@ -56,39 +57,37 @@ export default class RatingRecorderStore {
 
   @observable lastRatingInfo = {
     type: null,
-    timestamp: null,
-    rating_level: null,
-    description: null
+    time: null,
+    grade: null,
+    desc: null
   };
 
-  getEmotionalIconByLevel = (raterID) => {
+  getEmotionalIconByGrade = (raterID) => {
     if (this.raterDefinition[raterID].type !== "rate") {
       console.error("Not Rate Type");
       return
     }
-    const thisLevel = this.ratingLevel[raterID];
-    if (thisLevel < 4) {
+    const thisGrade = this.grade[raterID];
+    if (thisGrade < 4) {
       return {icon: "frown", color: "#f5222d"}
     }
-    if (thisLevel > 6) {
+    if (thisGrade > 6) {
       return {icon: "smile", color: "#52c41a"}
     }
     return {icon: "meh", color: "#faad14"}
   };
 
-  @action updateRatingLevel = (raterID, newLevel) => {
-    if (!isNaN(newLevel) && raterID) this.ratingLevel[raterID] = newLevel;
+  @action updateRatingGrade = (raterID, newGrade) => {
+    if (!isNaN(newGrade) && raterID !== null) this.grade[raterID] = newGrade;
   };
 
-  @action postRatingLevel = (raterID, description) => {
-    if (!this.ratingLevel[raterID]) return;
+  @action postRatingGrade = (raterID, desc) => {
     const data = {
       type: raterID,
-      timestamp: dayjs().unix(),
-      rating_level: this.ratingLevel[raterID],
-      description
+      time: utils.parseTime(undefined, true, true, true),
+      grade: this.grade[raterID],
+      desc
     };
-    console.log(data);
     Axios.ajax({
       url: backendConfig.ratingApi,
       method: "POST",

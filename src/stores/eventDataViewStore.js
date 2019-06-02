@@ -1,7 +1,6 @@
 import {action, computed, configure, observable, runInAction} from "mobx";
 import backendConfig from "../config/backendConfig";
 import Axios from "../utils/axios";
-import dayjs from "dayjs";
 import utils from "../utils/utils"
 
 configure({enforceActions: "always"});
@@ -35,19 +34,19 @@ export default class EventDataViewStore {
         key: "stopTime"
       },
       {
-        title: displayEnglish ? "Event Type" : "事件类型",
-        dataIndex: "eventType",
-        key: "eventType"
+        title: displayEnglish ? "Event ID" : "事件编号",
+        dataIndex: "eventID",
+        key: "eventID"
       },
       {
-        title: displayEnglish ? "Event Description" : "事件描述",
-        dataIndex: "eventCode",
-        key: "eventCode"
+        title: displayEnglish ? "Event Details" : "事件细节",
+        dataIndex: "optionCode",
+        key: "optionCode"
       },
       {
         title: displayEnglish ? "Note" : "备注",
-        dataIndex: "description",
-        key: "description"
+        dataIndex: "desc",
+        key: "desc"
       }
     ];
   }
@@ -56,37 +55,42 @@ export default class EventDataViewStore {
     return this.rootStore.EventDefinition.eventDefinition;
   }
 
-  @observable eventData = null;
+  @computed get eventData() {
+    return this.eventQueryResult && this.eventQueryResult.map(this.parseEvent)
+  }
+
+  @observable eventQueryResult = null;
 
   findEventDefinitionByEventId = event_id =>
     this.eventDefinition.find(value => value.event_id === event_id);
 
   parseEvent = event => {
     const {
-      id,
+      ID,
       event_id,
-      event_code,
-      start_timestamp,
-      stop_timestamp,
-      description
+      option_code,
+      start_time,
+      stop_time,
+      desc
     } = event;
+    const descIndex = this.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     //parse event code
     const thisEventDefinition = this.findEventDefinitionByEventId(event_id);
-    const thisEventOptions = utils.flatten(thisEventDefinition.event_option_groups
-      .map(value => value.event_options));
-    const eventCodeList = event_code.split(",").map(code => {
+    const thisEventOptions = utils.flatten(thisEventDefinition.option_groups
+      .map(value => value.options));
+    const eventCodeList = option_code.split(",").map(code => {
       code = parseInt(code);
       return thisEventOptions.find(value => value.option_id === code)
-        .description;
+        .desc[descIndex];
     });
     return {
-      key: id,
-      date: dayjs.unix(start_timestamp).format("YYYY-MM-DD"),
-      startTime: dayjs.unix(start_timestamp).format("HH:mm:ss"),
-      stopTime: dayjs.unix(stop_timestamp).format("HH:mm:ss"),
-      eventType: thisEventDefinition.description,
-      eventCode: eventCodeList.join(", "),
-      description
+      key: ID,
+      date: utils.parseTime(start_time, true, false),
+      startTime: utils.parseTime(start_time, false, true),
+      stopTime: utils.parseTime(stop_time, false, true),
+      eventID: thisEventDefinition.desc[descIndex],
+      optionCode: eventCodeList.join(", "),
+      desc: desc[descIndex]
     };
   };
 
@@ -96,7 +100,7 @@ export default class EventDataViewStore {
       method: "GET"
     }).then(res => {
       runInAction(() => {
-        this.eventData = res.data.map(this.parseEvent);
+        this.eventQueryResult = res.data;
       });
     });
   };

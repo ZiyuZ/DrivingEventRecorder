@@ -1,7 +1,8 @@
-import React, { Component } from "react";
-import { inject, observer } from "mobx-react";
-import { Modal, Radio, Checkbox, Input, List } from "antd";
+import React, {Component} from "react";
+import {inject, observer} from "mobx-react";
+import {Modal, Radio, Checkbox, Input, List} from "antd";
 import "./index.less";
+import {toJS} from "mobx";
 
 @inject("store")
 @observer
@@ -9,7 +10,8 @@ export default class EventDetailModal extends Component {
   thisStore = this.props.store.EventRecorder;
 
   renderRadioGroup = group => {
-    const { group_id, group_type, event_options } = group;
+    const {group_id, group_type, options} = group;
+    const descIndex = this.thisStore.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     return (
       <Radio.Group
         name={`${group_id}`}
@@ -19,9 +21,9 @@ export default class EventDetailModal extends Component {
           this.thisStore.handleCodeChange(group_type, group_id, e.target.value)
         }
       >
-        {event_options.map(option => (
+        {options.map(option => (
           <Radio value={option.option_id} key={option.option_id}>
-            {option.description}
+            {option.desc[descIndex]}
           </Radio>
         ))}
       </Radio.Group>
@@ -29,7 +31,8 @@ export default class EventDetailModal extends Component {
   };
 
   renderCheckBoxGroup = group => {
-    const { group_id, group_type, event_options } = group;
+    const {group_id, group_type, options} = group;
+    const descIndex = this.thisStore.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     return (
       <Checkbox.Group
         key={group_id}
@@ -38,9 +41,9 @@ export default class EventDetailModal extends Component {
           this.thisStore.handleCodeChange(group_type, group_id, checkedList)
         }
       >
-        {event_options.map(option => (
+        {options.map(option => (
           <Checkbox value={option.option_id} key={option.option_id}>
-            {option.description}
+            {option.desc[descIndex]}
           </Checkbox>
         ))}
       </Checkbox.Group>
@@ -74,12 +77,12 @@ export default class EventDetailModal extends Component {
   };
 
   renderOptionList = () => {
-    const { event_option_groups } = this.thisStore.thisEventDefinition;
+    const {option_groups} = this.thisStore.thisEventDefinition;
     return (
       <List
         size="small"
         bordered
-        dataSource={event_option_groups}
+        dataSource={option_groups}
         renderItem={this.renderOptionListItem}
       />
     );
@@ -90,13 +93,15 @@ export default class EventDetailModal extends Component {
       thisEventDefinition,
       modalVisible,
       setModalVisible,
-      handleModalOk
+      handleModalOk,
+      rootStore
     } = this.thisStore;
-    const { event_id, description } = thisEventDefinition;
+    const descIndex = rootStore.GlobalStore.displayEnglish ? 1 : 0;
+    const {event_id, desc} = thisEventDefinition;
     return (
       <Modal
         centered
-        title={`${event_id}. ${description}`}
+        title={`${event_id}. ${desc[descIndex]}`}
         visible={modalVisible}
         onOk={handleModalOk}
         onCancel={() => setModalVisible(false)}

@@ -34,10 +34,10 @@ export default class EventRecorderStore {
   // event selector
   @observable thisEvent = {
     event_id: null,
-    event_code: null,
-    start_timestamp: null,
-    stop_timestamp: null,
-    description: null
+    option_code: null,
+    start_time: null,
+    stop_time: null,
+    desc: null
   };
 
   @action updateThisEvent = eventProps => {
@@ -47,10 +47,10 @@ export default class EventRecorderStore {
       keys.map(key => {
         this.thisEvent[key] = eventProps[key];
         if (key === "event_id" && eventProps[key] != null) {
-          this.thisEvent.event_code = Array.from({
+          this.thisEvent.option_code = Array.from({
             length: this.eventDefinition.find(
               value => value.event_id === eventProps[key]
-            ).event_option_groups.length
+            ).option_groups.length
           });
         }
       });
@@ -60,10 +60,10 @@ export default class EventRecorderStore {
   @action resetThisEvent = () => {
     this.thisEvent = {
       event_id: null,
-      event_code: null,
-      start_timestamp: null,
-      stop_timestamp: null,
-      description: null
+      option_code: null,
+      start_time: null,
+      stop_time: null,
+      desc: null
     };
   };
 
@@ -72,7 +72,7 @@ export default class EventRecorderStore {
     const {realTime} = this.rootStore.VideoBasedRecorder;
     this.updateThisEvent({
       event_id,
-      start_timestamp: (realTime || dayjs()).unix()
+      start_time: utils.parseTime(realTime || undefined, true, true, true)
     });
     this.setModalVisible(true);
   };
@@ -95,10 +95,10 @@ export default class EventRecorderStore {
       addThisEventIntoStaging
     } = this;
     if (
-      thisEvent.event_code.some(
+      thisEvent.option_code.some(
         (value, index) =>
           value === undefined &&
-          thisEventDefinition.event_option_groups[index].group_type !== "c"
+          thisEventDefinition.option_groups[index].group_type !== "c"
       )
     ) {
       notification.error({
@@ -109,7 +109,7 @@ export default class EventRecorderStore {
       return;
     }
     runInAction(() => {
-      thisEvent.event_code = utils.flatten(thisEvent.event_code).filter(value => value);
+      thisEvent.option_code = utils.flatten(thisEvent.option_code).filter(value => value);
       addThisEventIntoStaging(thisEvent);
       setModalVisible(false);
     });
@@ -119,10 +119,10 @@ export default class EventRecorderStore {
     const {thisEvent} = this;
     switch (group_type) {
       case "r":
-        thisEvent.event_code[group_id - 1] = value;
+        thisEvent.option_code[group_id - 1] = value;
         break;
       case "c":
-        thisEvent.event_code[group_id - 1] = value.sort();
+        thisEvent.option_code[group_id - 1] = value.sort();
         break;
       default:
         console.warn(`Unknown group type: ${group_type}`);
@@ -130,7 +130,7 @@ export default class EventRecorderStore {
   };
 
   @action handleDescriptionChange = value => {
-    this.thisEvent.description = value;
+    this.thisEvent.desc = value;
   };
 
   // staging area
@@ -149,11 +149,9 @@ export default class EventRecorderStore {
     const targetElement = toJS(this.staging[index]);
     const {realTime} = this.rootStore.VideoBasedRecorder;
     // processing element
-    targetElement.stop_timestamp = (realTime || dayjs()).unix();
-    targetElement.event_code = targetElement.event_code.join(",");
-    if (!targetElement.description) {
-      targetElement.description = "";
-    }
+    targetElement.stop_time = utils.parseTime(realTime || undefined, true, true, true);
+    targetElement.option_code = targetElement.option_code.join(",");
+    targetElement.desc = targetElement.desc || "";
     //submit event
     this.postEvent(targetElement).then(() => {
       this.deleteElementFromStaging(index);

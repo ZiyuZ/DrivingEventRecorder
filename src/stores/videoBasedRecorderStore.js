@@ -1,4 +1,4 @@
-import {action, computed, configure, observable, runInAction} from "mobx";
+import {action, computed, configure, observable, runInAction, toJS} from "mobx";
 import {notification} from 'antd';
 import Axios from "../utils/axios"
 import backendConfig from "../config/backendConfig";
@@ -25,27 +25,37 @@ export default class VideoBasedRecorderStore {
   };
 
   @observable videoProps = {
+    id: null,
     name: null,
+    path: null,
+    begin_time: null,
+    end_time: null,
+    type: null,
+    video_gps_time_diff: 0,
     baseTime: null,
     playbackTime: null,
     isFrozen: false,
   };
 
   @action updateVideoProp = videoProp => {
+    if (videoProp.key.toLowerCase() === 'id' && this.videoProps.id !== videoProp.value) {
+      const {ID: id, file_name: name, path, begin_time, end_time, type, video_gps_time_diff} = this.videoList.find(value => value.ID === videoProp.value);
+      this.videoProps = {id, name, path, begin_time, end_time, type, video_gps_time_diff}
+    }
     this.videoProps[videoProp.key] = videoProp.value;
   };
 
   @action loadVideo = () => {
-    const {name, baseTime} = this.videoProps;
-    if (!name || !baseTime) {
+    const {name, path} = this.videoProps;
+    if (!name || !path) {
       notification.error({
         message: "ValueError",
-        description: "Invalid video name or time!"
+        description: "Invalid video!"
       });
       return;
     }
     runInAction(() => {
-      this.playerProps.url = `${backendConfig.backendVideoURL}/${this.videoProps.name}`;
+      this.playerProps.url = `${backendConfig.backend}${backendConfig.dataStorageApi}${path}`;
       this.videoProps.isFrozen = true;
     });
   };
@@ -55,7 +65,7 @@ export default class VideoBasedRecorderStore {
       this.videoProps.isFrozen = false;
       this.videoProps.playbackTime = null;
       this.playerProps.url = null;
-      this.playerProps.playbackRate = 1.0;
+      // this.playerProps.playbackRate = 1.0;
       this.playerVerticalFlip = false;
       this.playerHorizontalFlip = false;
     });
@@ -69,7 +79,7 @@ export default class VideoBasedRecorderStore {
     this[flipType] = flipValue;
   };
 
-  @computed get playerFlipStyle () {
+  @computed get playerFlipStyle() {
     return {
       transform: `scale(${this.playerHorizontalFlip ? -1 : 1}, ${this.playerVerticalFlip ? -1 : 1})`,
       backgroundColor: "#000"
@@ -105,11 +115,7 @@ export default class VideoBasedRecorderStore {
 
   @computed get realTime() {
     const {baseTime, playbackTime} = this.videoProps;
-    return baseTime && playbackTime ? dayjs(baseTime).add(playbackTime, 's') : null;
-  }
-
-  @computed get realTimeString() {
-    return this.realTime ? this.realTime.format("YY-MM-DD HH:mm:ss") : "No value";
+    return baseTime && playbackTime ? dayjs(baseTime).add(playbackTime, 's').toISOString() : null;
   }
 
   @observable
@@ -137,7 +143,6 @@ export default class VideoBasedRecorderStore {
         key: 'playbackTime',
         value: e.playedSeconds
       });
-      // console.log(e)
     },
     onDuration: (duration) => {
       notification.open({

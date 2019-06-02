@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {Button, Card, Col, Icon, Radio, Rate, Row, Statistic} from "antd";
 import {inject, observer} from "mobx-react";
 import "./index.less";
-import dayjs from "dayjs";
+import utils from "../../utils/utils";
 
 @inject("store")
 @observer
@@ -12,15 +12,15 @@ export default class RatingRecorder extends Component {
 
   renderRater = (rater) => {
     const {
-      updateRatingLevel, ratingLevel, getEmotionalIconByLevel
+      updateRatingGrade, grade, getEmotionalIconByGrade
     } = this.thisStore;
     if (rater.type === "rate") {
-      const {icon, color} = getEmotionalIconByLevel(rater.id);
+      const {icon, color} = getEmotionalIconByGrade(rater.id);
       return <Rate
-        onChange={(value) => updateRatingLevel(rater.id, value)}
-        onHoverChange={(value) => updateRatingLevel(rater.id, value)}
+        onChange={(value) => updateRatingGrade(rater.id, value)}
+        onHoverChange={(value) => updateRatingGrade(rater.id, value)}
         count={rater.levels}
-        value={ratingLevel[rater.id]}
+        value={grade[rater.id]}
         style={{color}}
         character={<Icon type={icon}/>}
         allowClear={false}
@@ -28,8 +28,8 @@ export default class RatingRecorder extends Component {
     } else {
       return (
         <Radio.Group
-          value={ratingLevel[rater.id]}
-          onChange={(e) => updateRatingLevel(rater.id, e.target.value)}
+          value={grade[rater.id]}
+          onChange={(e) => updateRatingGrade(rater.id, e.target.value)}
         >
           {rater.levels.map(
             (level, index) => <Radio value={level} key={index}>{level}</Radio>)
@@ -42,8 +42,8 @@ export default class RatingRecorder extends Component {
   renderRaterCard = (rater) => {
     const {
       raterDefinition,
-      postRatingLevel,
-      ratingLevel,
+      postRatingGrade,
+      grade,
     } = this.thisStore;
     const {displayEnglish} = this.thisStore.rootStore.GlobalStore;
     return (
@@ -57,7 +57,7 @@ export default class RatingRecorder extends Component {
             {this.renderRater(rater)}
             {
               <span className="ant-rate-text">
-                {`${displayEnglish ? "Current Level" : "当前等级"}: ${ratingLevel[rater.id]}`}
+                {`${displayEnglish ? "Current Level" : "当前等级"}: ${grade[rater.id]}`}
               </span>
             }
           </div>
@@ -65,7 +65,7 @@ export default class RatingRecorder extends Component {
             <Button
               type="primary"
               block
-              onClick={() => postRatingLevel(rater.id, "")}
+              onClick={() => postRatingGrade(rater.id, "")}
             >
               {displayEnglish ? "Submit" : "提交"}
             </Button>
@@ -84,13 +84,13 @@ export default class RatingRecorder extends Component {
   render() {
     const {lastRatingInfo, raterDefinition} = this.thisStore;
     const {displayEnglish} = this.thisStore.rootStore.GlobalStore;
-    const lastRatingString = lastRatingInfo.type ?
+    const lastRatingString = lastRatingInfo.type !== null ?
       `[${
-        dayjs.unix(lastRatingInfo.timestamp).format("HH:mm:ss")
+        utils.parseTime(lastRatingInfo.time, true, true)
         }] ${
-        raterDefinition[lastRatingInfo.type]
+        raterDefinition[lastRatingInfo.type].raterName
         }: ${
-        lastRatingInfo.rating_level
+        lastRatingInfo.grade
         }`
       : "No value";
     return (

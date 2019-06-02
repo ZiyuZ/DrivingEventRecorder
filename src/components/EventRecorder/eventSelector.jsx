@@ -15,7 +15,7 @@ export default class EventSelector extends Component {
       onClick={() => this.thisStore.handleEventAddButtonClicked(e.event_id)}
       className="event-button"
     >
-      {`${e.event_id}. ${e.description}`}
+      {`${e.event_id}. ${e.desc[this.thisStore.rootStore.GlobalStore.displayEnglish ? 1 : 0]}`}
     </Button>
   );
 

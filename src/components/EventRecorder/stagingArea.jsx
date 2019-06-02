@@ -3,6 +3,7 @@ import {inject, observer} from "mobx-react";
 import dayjs from "dayjs";
 import {Button, Card, Empty, Icon, List, Popconfirm, Tooltip} from "antd";
 import utils from "../../utils/utils"
+import {toJS} from "mobx";
 
 @inject("store")
 @observer
@@ -34,19 +35,16 @@ export default class StagingArea extends Component {
   renderItemMeta = item => {
     const {findEventDefinitionByEventId} = this.thisStore;
     const itemDefinition = findEventDefinitionByEventId(item.event_id);
-    const thisEventOptions = utils.flatten(itemDefinition.event_option_groups
-      .map(value => value.event_options));
+    const thisEventOptions = utils.flatten(itemDefinition.option_groups.map(value => value.options));
+    const descIndex = this.thisStore.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     return (
       <List.Item.Meta
-        title={`${itemDefinition.event_id}. ${itemDefinition.description}`}
+        title={`${itemDefinition.event_id}. ${itemDefinition.desc[descIndex]}`}
         description={
           <ul className="event-code-description-list">
-            {item.event_code.map((code, index) => (
+            {item.option_code.map((code, index) => (
               <li key={index}>
-                {
-                  thisEventOptions.find(value => value.option_id === code)
-                    .description
-                }
+                {thisEventOptions.find(value => value.option_id === code).desc[descIndex]}
               </li>
             ))}
           </ul>
@@ -56,15 +54,13 @@ export default class StagingArea extends Component {
   };
 
   renderEventItem = (item, index) => {
+    const descIndex = this.thisStore.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     return (
       <List.Item
-        actions={this.renderActions(
-          index,
-          dayjs.unix(item.start_timestamp).format("YYYY-MM-DD HH:mm:ss")
-        )}
+        actions={this.renderActions(index, utils.parseTime(item.start_time))}
       >
         {this.renderItemMeta(item)}
-        {item.description ? (
+        {item.desc ? (
           <Tooltip placement="top" title="description" className="description">
             <Icon
               type="profile"
@@ -72,7 +68,7 @@ export default class StagingArea extends Component {
               twoToneColor="#52c41a"
               className="description-icon"
             />
-            {item.description}
+            {item.desc[descIndex]}
           </Tooltip>
         ) : null}
       </List.Item>

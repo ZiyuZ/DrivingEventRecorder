@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import {inject, observer} from "mobx-react";
 import {Alert, Button, Card, Spin, Table} from "antd";
 import {CSVLink} from "react-csv";
-import dayjs from "dayjs";
+import utils from "../../utils/utils"
 
 @inject("store")
 @observer
@@ -49,7 +49,7 @@ export default class DataView extends Component {
 
   renderDownloadCSVButton = () => {
     const {eventData} = this.thisStore;
-    const filename = `Event_${dayjs().format('YYYY-MM-DDTHH:mm:ss')}.csv`;
+    const filename = `Event_${utils.parseTime()}.csv`;
     return <Button>
       {eventData ?
         eventData.length !== 0 ?
