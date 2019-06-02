@@ -156,7 +156,7 @@ func readConf() *config {
 		os.Exit(1)
 	}
 	c := &config{
-		viper.GetBool("main.call_borwser"),
+		viper.GetBool("main.call_browser"),
 		viper.GetBool("dev.debug"),
 		viper.GetBool("dev.log"),
 		viper.GetString("dev.log_path"),
@@ -170,6 +170,7 @@ func readConf() *config {
 	// Set the database in memory when debug is on
 	if c.Debug {
 		c.DatabasePath = ":memory:"
+		c.CallBrowser = false
 		fmt.Println("Warning: you are in Debug mode and no data will be saved.")
 	}
 	if !c.Log {

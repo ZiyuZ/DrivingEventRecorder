@@ -10,10 +10,12 @@ import (
 )
 
 func initEngine() *gin.Engine {
-	e := gin.New()
-	if !C.Debug {
+	if C.Debug {
+		gin.SetMode(gin.DebugMode)
+	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
+	e := gin.New()
 	// logger middleware
 	if C.Log {
 		gin.DisableConsoleColor()

@@ -1,10 +1,10 @@
 [main]
-call_browser = false  # open browser automatically when the program starts
+call_browser = true  # open browser automatically when the program starts
 
 [dev]
 debug = true
 log = false
-log_path = "app.log"  # will be ignore if "log" is false
+log_path = "recorder.log"  # will be ignore if "log" is false
 
 [data]
 definition_path = "definition.json"
