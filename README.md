@@ -29,12 +29,12 @@
 ## 如何使用?
 
 1. 到 [Releases](https://github.com/zhzyX/DrivingEventRecorder/releases) 页面下载并解压应用, 如果你已经下载, 请跳过这一步.
-2. 编辑应用目录下的 `config.ini` 文件, 你可能需要调整以下配置 (注意: 每次修改配置后都需要重新启动应用):
-	* `dev` 部分的 `call_browser` 配置项: 设置为 `true` 以自动启动浏览器并跳转至应用页面.
-	* `resource` 部分的 `video_path` 配置项 (**重要**): 设置为你的视频文件所在目录, 应用将读取对应目录下 (但不包括子目录) 的所有 mp4 格式的视频, 并在前端页面展示出来.
-	* `server` 部分的 `port` 配置项: 设置应用默认端口
-	* `server` 部分的 `log` 配置项: 设置为 `true` 以重定向日志到 `log_path` 所指定的文件, 当值为 `false` 时 `log_path` 项将被忽略.
-	* `database` 部分的 `init_script` 配置项: 设置为 `.\db\init_db.sql` 时数据库将会初始化为中文; 设置为`.\db\init_db_en.sql` 时数据库将会以英文初始化. 每次修改这项配置后都需要删除 `db` 目录下的 `event.db` 文件以重新初始化.
+2. 编辑应用目录下的 `config.toml` 文件, 你可能需要调整以下配置 (注意: 每次修改配置后都需要重新启动应用):
+	* `main` 部分的 `call_browser` 配置项: 设置为 `true` 以自动启动浏览器并跳转至应用页面, 当`debug` 值为 `true` 时该项会被强制指定为 `false`.
+	* `data` 部分的 `data_path` 配置项 (**重要**): 设置为你的视频文件所在目录, 应用将读取对应目录下 (包括子目录) 的所有 mp4 格式的视频, 并在前端页面展示出来.
+	* `server` 部分的 `port` 配置项: 设置应用默认端口, 当出现端口冲突时修改此选项.
+	* `dev` 部分的 `log` 配置项: 设置为 `true` 以重定向日志到 `log_path` 所指定的文件, 当值为 `false` 时 `log_path` 项将被忽略.
+	* `database` 部分的 `database_path` 配置项: 数据库位置.
 3. 启动应用, 有如下几种方法可以启动应用:
 	* [推荐👍] 在控制台中跳转到应用目录, 执行 `.\recorder.exe`
 	* 打开应用目录, 在资源管理器地址栏输入 `cmd /c .\recorder.exe`
