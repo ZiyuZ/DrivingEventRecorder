@@ -1,6 +1,6 @@
 {
   "name": "driving_event_recorder_frontend",
-  "version": "1.0.0",
+  "version": "0.14.1",
   "private": true,
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.4.4",
@@ -22,7 +22,7 @@
     "react-csv": "^1.1.1",
     "react-dom": "^16.8.4",
     "react-player": "^1.9.3",
-    "react-router-dom": "^5.0.0",
+    "react-router-dom": "^5.0.0"
   },
   "scripts": {
     "start": "react-app-rewired start",
