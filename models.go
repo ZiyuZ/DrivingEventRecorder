@@ -13,13 +13,13 @@ type (
 		StartTime  time.Time `json:"start_time"`
 		StopTime   time.Time `json:"stop_time"`
 		Desc       string    `json:"desc"`
-	}
+	} // 是否需要添加视频文件名字段?
 
 	Video struct {
 		gorm.Model
 		FileName         string    `json:"file_name"`
 		Path             string    `json:"path"`
-		BeginTime        time.Time `json:"start_time"`
+		BeginTime        time.Time `json:"begin_time"`
 		EndTime          time.Time `json:"end_time"`
 		Type             string    `json:"type"` // A: outside (front); B: inside
 		VideoGPSTimeDiff int       `json:"video_gps_time_diff"`
@@ -29,7 +29,7 @@ type (
 		gorm.Model
 		FileName  string    `json:"file_name"`
 		Path      string    `json:"path"`
-		BeginTime time.Time `json:"start_time"`
+		BeginTime time.Time `json:"begin_time"`
 		EndTime   time.Time `json:"end_time"`
 	}
 
@@ -68,6 +68,11 @@ func deleteRatingByID(id int) (err error) {
 	return DB.Where("id = ?", id).Delete(&Rating{}).Error
 }
 
+func queryVideoByID(id int) (video Video, err error) {
+	err = DB.Where("id = ?", id).First(&video).Error
+	return
+}
+
 func queryVideos() (videos []Video, err error) {
 	err = DB.Find(&videos).Error
 	return
@@ -85,11 +90,23 @@ func insertVideo(video *Video) (err error) {
 	return DB.Create(video).Error
 }
 
-func updateVideo(video *Video) (err error) {
+func updateVideo(updatedVideo *Video) (err error) {
+	var video Video
 	if err = DB.First(&video).Error; err != nil {
 		return
 	}
+	video.FileName = updatedVideo.FileName
+	video.Path = updatedVideo.Path
+	video.BeginTime = updatedVideo.BeginTime
+	video.EndTime = updatedVideo.EndTime
+	video.Type = updatedVideo.Type
+	video.VideoGPSTimeDiff = updatedVideo.VideoGPSTimeDiff
 	return DB.Save(&video).Error
+}
+
+func queryTrajectoryByID(id int) (trajectory Trajectory, err error) {
+	err = DB.Where("id = ?", id).First(&trajectory).Error
+	return
 }
 
 func queryTrajectories() (trajectories []Trajectory, err error) {
@@ -109,9 +126,14 @@ func insertTrajectory(trajectory *Trajectory) (err error) {
 	return DB.Create(trajectory).Error
 }
 
-func updateTrajectory(trajectory *Trajectory) (err error) {
+func updateTrajectory(updatedTrajectory *Trajectory) (err error) {
+	var trajectory Trajectory
 	if err = DB.First(&trajectory).Error; err != nil {
 		return
 	}
+	trajectory.FileName = updatedTrajectory.FileName
+	trajectory.Path = updatedTrajectory.Path
+	trajectory.BeginTime = updatedTrajectory.BeginTime
+	trajectory.EndTime = updatedTrajectory.EndTime
 	return DB.Save(&trajectory).Error
 }

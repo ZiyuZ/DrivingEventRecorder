@@ -90,7 +90,7 @@ func writeLog(level string, content interface{}) {
 	level = strings.ToUpper(level)
 	if C.Debug || level != "DEBUG" {
 		_, _ = fmt.Fprintln(gin.DefaultWriter,
-			fmt.Sprintf("[GIN:%s] %v |%s \n", level, time.Now().Format("2006/01/02 - 15:04:05"), content))
+			fmt.Sprintf("[GIN:%s] %v | %s \n", level, time.Now().Format("2006/01/02 - 15:04:05"), content))
 	}
 
 	if level == "FATAL" {
@@ -250,7 +250,6 @@ func TraverseDirectoriesRecursively(folder *Folder, rootDir string) (err error) 
 		files, err = ioutil.ReadDir(folder.Path)
 	} else {
 		files, err = ioutil.ReadDir(rootDir)
-		folder.Path = rootDir
 	}
 	if err != nil {
 		fmt.Printf("%v\n", err)
