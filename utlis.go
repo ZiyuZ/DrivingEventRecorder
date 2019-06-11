@@ -78,11 +78,10 @@ type (
 	}
 
 	Folder struct {
-		Name      string    `json:"name"`
-		Path      string    `json:"path"`
-		Date      time.Time `json:"date"`
-		SubFile   []File    `json:"sub_file"`
-		SubFolder []Folder  `json:"sub_folder"`
+		Name      string   `json:"name"`
+		Path      string   `json:"path"`
+		SubFile   []File   `json:"sub_file"`
+		SubFolder []Folder `json:"sub_folder"`
 	}
 )
 
@@ -245,13 +244,9 @@ func callUserInterface(callBrowser bool) {
 	}
 }
 
-func TraverseDirectoriesRecursively(folder *Folder, rootDir string) (err error) {
+func TraverseDirectoriesRecursively(folder *Folder) (err error) {
 	var files []os.FileInfo
-	if rootDir == "" {
-		files, err = ioutil.ReadDir(folder.Path)
-	} else {
-		files, err = ioutil.ReadDir(rootDir)
-	}
+	files, err = ioutil.ReadDir(filepath.Join(C.DataPath, folder.Path))
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return err
@@ -259,19 +254,13 @@ func TraverseDirectoriesRecursively(folder *Folder, rootDir string) (err error) 
 	for _, f := range files {
 		currentFilePath := fmt.Sprintf("%v/%v", folder.Path, f.Name())
 		if f.IsDir() { // traverse directory recursively
-			var date time.Time
-			date, err = time.Parse("060102", f.Name())
-			if err != nil {
-				date = time.Time{}
-			}
 			newSubFolder := Folder{
 				f.Name(),
 				currentFilePath,
-				date,
 				[]File{},
 				[]Folder{},
 			}
-			err = TraverseDirectoriesRecursively(&newSubFolder, "")
+			err = TraverseDirectoriesRecursively(&newSubFolder)
 			if err != nil {
 				writeLog("FATAL", err)
 			}
@@ -280,7 +269,7 @@ func TraverseDirectoriesRecursively(folder *Folder, rootDir string) (err error) 
 			file := File{
 				f.Name(),
 				strings.ToLower(filepath.Ext(f.Name())),
-				folder.Date,
+				time.Time{},
 			}
 			folder.SubFile = append(folder.SubFile, file)
 			StoreFileToDatabase(file, currentFilePath)
@@ -296,18 +285,17 @@ func StoreFileToDatabase(file File, path string) {
 		var videoEndTime time.Time
 		var videoType string
 		var err error
-		if len(videoSplitName) == 3 {
-			formatDate := file.Date.Format("20060102")
-			videoType = videoSplitName[3]
+		if len(videoSplitName) == 4 {
+			videoType = string([]rune(videoSplitName[3])[0])
 			videoBeginTime, err = time.Parse("20060102T150405Z07:00",
-				fmt.Sprintf("%sT%s+08:00", formatDate, videoSplitName[1]))
+				fmt.Sprintf("%sT%s+08:00", videoSplitName[0], videoSplitName[1]))
 			if err != nil {
 				writeLog("WARN", err)
 				videoBeginTime = file.Date
 			}
 
 			videoEndTime, err = time.Parse("20060102T150405Z07:00",
-				fmt.Sprintf("%sT%s+08:00", formatDate, videoSplitName[2]))
+				fmt.Sprintf("%sT%s+08:00", videoSplitName[0], videoSplitName[2]))
 			if err != nil {
 				writeLog("WARN", err)
 				videoEndTime = file.Date
@@ -341,7 +329,7 @@ func StoreFileToDatabase(file File, path string) {
 }
 
 func InitDataStorageFiles() (root *Folder) {
-	root = &Folder{"Public", "", time.Time{}, []File{}, []Folder{}}
-	_ = TraverseDirectoriesRecursively(root, C.DataPath)
+	root = &Folder{"Public", "", []File{}, []Folder{}}
+	_ = TraverseDirectoriesRecursively(root)
 	return
 }
