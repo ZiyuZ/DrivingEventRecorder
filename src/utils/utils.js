@@ -1,4 +1,4 @@
-import dayjs from "dayjs";
+import moment from "moment";
 
 const flatten = list => list.reduce(
   (a, b) => a.concat(Array.isArray(b) ? flatten(b) : b), []
@@ -6,7 +6,7 @@ const flatten = list => list.reduce(
 
 const parseTime = (timeString, date = true, time = true, zone = false) => {
   const template = (date ? 'YYYY-MM-DD' : '') + (date && time ? 'T' : '') + (time ? 'HH:mm:ss' : '') + (zone ? 'Z' : '');
-  return dayjs(timeString).format(template);
+  return moment(timeString).format(template);
 };
 
 export default {

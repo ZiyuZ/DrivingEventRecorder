@@ -1,6 +1,6 @@
 {
   "short_name": "DERecorder",
-  "name": "Driving Event Recorder",
+  "file_name": "Driving Event Recorder",
   "icons": [
     {
       "src": "favicon.ico",

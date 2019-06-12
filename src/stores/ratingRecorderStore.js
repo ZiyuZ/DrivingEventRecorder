@@ -1,7 +1,6 @@
 import {action, computed, configure, observable, runInAction} from "mobx";
 import Axios from "../utils/axios";
 import backendConfig from "../config/backendConfig";
-import dayjs from "dayjs";
 import utils from "../utils/utils";
 
 configure({enforceActions: "always"});

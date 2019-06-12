@@ -122,7 +122,7 @@ export default class EventDataViewStore {
       params: {id}
     }).then(() => {
       runInAction(() => {
-        this.eventData = this.eventData.filter(event => event.key !== id);
+        this.eventQueryResult = this.eventQueryResult.filter(event => event.ID !== id);
       })
     });
   }

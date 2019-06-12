@@ -1,7 +1,6 @@
 import {action, computed, configure, observable, runInAction, toJS} from "mobx";
 import {notification} from "antd";
 import Axios from "../utils/axios";
-import dayjs from "dayjs";
 import backendConfig from "../config/backendConfig";
 import utils from "../utils/utils"
 
