@@ -7,6 +7,10 @@ import "./index.less";
 @inject("store")
 @observer
 export default class Home extends Component {
+  componentDidMount() {
+    this.props.store.GlobalStore.fetchIP();
+  }
+
   handleButtonClicked = id => {
     this.props.store.GlobalStore.changeSelectedPageId(id.toString());
   };
@@ -35,12 +39,21 @@ export default class Home extends Component {
   };
 
   render() {
+    const {pagesMetaInfo, cnip, lnip, appTexts} = this.props.store.GlobalStore;
     return (
-      <Card title={this.props.store.GlobalStore.appTexts.pageTitles[0]} className="main card-wrap home-page-card">
+      <Card title={appTexts.pageTitles[0]} className="main card-wrap home-page-card">
         <div className="link-button-group">
-          {this.props.store.GlobalStore.pagesMetaInfo.map(this.renderButton)}
+          {pagesMetaInfo.map(this.renderButton)}
         </div>
-        {/*TODO: 配置后端选项, 一些文本框就行*/}
+        <br/>
+        <div>
+          Access via Campus Network IP: {cnip ? <a href={cnip}>{cnip}</a> : "Unknown"}
+          <br/>
+          Access via LAN IP: {lnip.map((value, index) => {
+          const target = `http://${value}:${window.location.port}`;
+          return <a href={target} key={index}>{value + '; '}</a>
+        })}
+        </div>
       </Card>
     );
   }

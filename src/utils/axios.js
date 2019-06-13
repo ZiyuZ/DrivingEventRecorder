@@ -1,6 +1,6 @@
 import axios from "axios";
 import backendConfig from "../config/backendConfig";
-import {Modal, message} from "antd";
+import {message, Modal} from "antd";
 
 export default class Axios {
   static ajax(options) {
@@ -25,7 +25,7 @@ export default class Axios {
             });
           }
         } else {
-          reject();
+          reject(response.data);
         }
       });
     });

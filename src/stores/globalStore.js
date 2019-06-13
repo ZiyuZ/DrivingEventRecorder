@@ -1,5 +1,7 @@
-import {action, computed, configure, observable} from "mobx";
+import {action, computed, configure, observable, runInAction} from "mobx";
 import {message} from "antd";
+import Axios from "../utils/axios";
+import backendConfig from "../config/backendConfig";
 
 configure({enforceActions: "always"});
 
@@ -70,4 +72,30 @@ export default class GlobalStore {
     this.displayEnglish = !this.displayEnglish;
     mode === "init" || message.success(this.displayEnglish ? "Language switch successfully" : "语言切换成功");
   };
+
+  @observable cnip = '';
+  @observable lnip = [];
+
+  @action fetchIP = () => {
+    Axios.ajax({
+      url: backendConfig.lnipApi,
+      method: "GET"
+    }).then(res => {
+      runInAction(() => {
+        this.lnip = res.data;
+      })
+    }).catch((res) => {
+      this.lnip = res.message;
+    });
+    Axios.ajax({
+      url: backendConfig.cnipApi,
+      method: "GET"
+    }).then(res => {
+      runInAction(() => {
+        this.cnip = res.data;
+      })
+    }).catch((res) => {
+      this.cnip = res.message;
+    });
+  }
 }
