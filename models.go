@@ -12,8 +12,9 @@ type (
 		OptionCode string    `json:"option_code" `
 		StartTime  time.Time `json:"start_time"`
 		StopTime   time.Time `json:"stop_time"`
-		Desc       string    `json:"desc"`
-	} // 是否需要添加视频文件名字段?
+		//RelatedVideoID int `json:"related_video_id"`  # 可以用于根据事件寻找视频
+		Desc string `json:"desc"`
+	}
 
 	Video struct {
 		gorm.Model

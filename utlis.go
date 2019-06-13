@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"io/ioutil"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -82,6 +83,17 @@ type (
 		Path      string   `json:"path"`
 		SubFile   []File   `json:"sub_file"`
 		SubFolder []Folder `json:"sub_folder"`
+	}
+
+	CampusNetworkState struct {
+		Status         int         `json:"status"`
+		Info           string      `json:"info"`
+		LogoutUsername string      `json:"logout_username"`
+		LogoutDomain   string      `json:"logout_domain"`
+		LogoutIP       string      `json:"logout_ip"`
+		LogoutLocation string      `json:"logout_location"`
+		LogoutTimer    int         `json:"logout_timer"`
+		Data           interface{} `json:"data"`
 	}
 )
 
@@ -220,17 +232,11 @@ func callUserInterface(callBrowser bool) {
 		"\t1. Run \"ipconfig /all\" in your terminal and view IP addresses.\n"+
 		"\t2. Find the local address of the intranet where the target device is located.\n"+
 		"\t3. Visit \"http://[This PC's IP address]:%v\" on the target device.\n", C.Port)
-	ifaces, _ := net.Interfaces()
+
 	fmt.Printf("\t(Maybe you can try: ")
-	for _, i := range ifaces {
-		addrs, _ := i.Addrs()
-		// handle err
-		for _, addr := range addrs {
-			ipnet, _ := addr.(*net.IPNet)
-			if ipnet.IP.IsGlobalUnicast() {
-				fmt.Printf(" \"http://%v:%v\"", ipnet.IP.To4(), C.Port)
-			}
-		}
+	ipList := getIntranetIPList()
+	for _, ip := range ipList {
+		fmt.Printf(" \"http://%v:%v\"", ip, C.Port)
 	}
 	fmt.Printf(")\n")
 
@@ -239,9 +245,9 @@ func callUserInterface(callBrowser bool) {
 		err := exec.Command("cmd", cmd).Start()
 		if err != nil {
 			writeLog("WARN", err)
-			return
 		}
 	}
+	return
 }
 
 func TraverseDirectoriesRecursively(folder *Folder) (err error) {
@@ -332,4 +338,42 @@ func InitDataStorageFiles() (root *Folder) {
 	root = &Folder{"Public", "", []File{}, []Folder{}}
 	_ = TraverseDirectoriesRecursively(root)
 	return
+}
+
+func getIntranetIPList() (ipList []string) {
+	ifaces, _ := net.Interfaces()
+	for _, i := range ifaces {
+		addrs, _ := i.Addrs()
+		// handle err
+		for _, addr := range addrs {
+			ipnet, _ := addr.(*net.IPNet)
+			if ipnet.IP.IsGlobalUnicast() {
+				ipString := ipnet.IP.To4().String()
+				ipList = append(ipList, ipString)
+			}
+		}
+	}
+	return
+}
+
+func getCampusNetworkInfo() (ip string, desc string) {
+	c := &http.Client{Timeout: 10 * time.Second}
+	r, err := c.Get("https://w.seu.edu.cn/index.php/index/init")
+	defer r.Body.Close()
+	if err != nil || r.StatusCode != 200 {
+		return "", "The server has failed to get campus network information."
+	}
+
+	var CNState CampusNetworkState
+	err = json.NewDecoder(r.Body).Decode(&CNState)
+	fmt.Printf("%v+", CNState)
+	if err != nil {
+		return "", "The server has failed to parse the campus network information."
+	}
+
+	if CNState.Status != 1 {
+		return "", "The server did not log on to the campus network."
+	} else {
+		return CNState.LogoutIP, "Successfully Obtained Server Campus Network IP."
+	}
 }

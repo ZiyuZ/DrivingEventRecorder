@@ -203,3 +203,23 @@ func putTrajectory(c *gin.Context) {
 		c.JSON(http.StatusOK, &Response{0, "Update trajectory successfully", nil})
 	}
 }
+
+func getCampusNetworkIP(c *gin.Context) {
+	ip, desc := getCampusNetworkInfo()
+	if ip == "" {
+		writeLog("ERROR", desc)
+		c.JSON(http.StatusInternalServerError, &Response{1, desc, nil})
+	} else {
+		c.JSON(http.StatusInternalServerError, &Response{0, desc, ip})
+	}
+}
+
+func getIntranetNetworkIP(c *gin.Context) {
+	ipList := getIntranetIPList()
+	if len(ipList) == 0 {
+		writeLog("WARN", "No valid LAN IP address")
+		c.JSON(http.StatusInternalServerError, &Response{1, "No valid LAN IP address", nil})
+	} else {
+		c.JSON(http.StatusInternalServerError, &Response{0, "Get LAN IP successfully", ipList})
+	}
+}

@@ -38,6 +38,8 @@ func initEngine() *gin.Engine {
 	api := e.Group("/api")
 	{
 		api.GET("/ping", ping)
+		api.GET("/cnip", getCampusNetworkIP)
+		api.GET("/lnip", getIntranetNetworkIP)
 
 		storage := api.Group("/storage")
 		{
