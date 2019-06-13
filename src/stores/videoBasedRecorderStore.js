@@ -96,7 +96,7 @@ export default class VideoBasedRecorderStore {
 
   @computed get realTime() {
     const {begin_time, playbackTime} = this.videoProps;
-    return begin_time && playbackTime ? moment(begin_time).add(playbackTime, 's').toISOString() : null;
+    return begin_time && playbackTime !== null ? begin_time.add(playbackTime, 's') : null;
   }
 
   @action updateVideoProp = videoProp => {

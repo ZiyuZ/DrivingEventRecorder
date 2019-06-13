@@ -71,7 +71,7 @@ export default class EventRecorderStore {
     const {realTime} = this.rootStore.VideoBasedRecorder;
     this.updateThisEvent({
       event_id,
-      start_time: utils.parseTime(realTime || undefined, true, true, true)
+      start_time: realTime.format("YYYY-MM-DDTHH:mm:ssZ")
     });
     this.setModalVisible(true);
   };
@@ -148,7 +148,7 @@ export default class EventRecorderStore {
     const targetElement = toJS(this.staging[index]);
     const {realTime} = this.rootStore.VideoBasedRecorder;
     // processing element
-    targetElement.stop_time = utils.parseTime(realTime || undefined, true, true, true);
+    targetElement.stop_time = realTime.format("YYYY-MM-DDTHH:mm:ssZ");
     targetElement.option_code = targetElement.option_code.join(",");
     targetElement.desc = targetElement.desc || "";
     //submit event

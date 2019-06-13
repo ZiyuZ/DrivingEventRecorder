@@ -2,6 +2,7 @@ import {action, computed, configure, observable, runInAction} from "mobx";
 import backendConfig from "../config/backendConfig";
 import Axios from "../utils/axios";
 import utils from "../utils/utils"
+import moment from "moment";
 
 configure({enforceActions: "always"});
 
@@ -56,7 +57,19 @@ export default class EventDataViewStore {
   }
 
   @computed get eventData() {
-    return this.eventQueryResult && this.eventQueryResult.map(this.parseEvent)
+    if (this.eventQueryResult) {
+      const parsedEvents = this.eventQueryResult.map(this.parseEvent);
+      const {isFrozen, begin_time, end_time} = this.rootStore.VideoBasedRecorder.videoProps;
+      if (isFrozen) {
+        return parsedEvents.filter((value) => {
+          const {date, startTime, stopTime} = value;
+          return moment(`${date}T${startTime}`).isBetween(begin_time, end_time) && moment(`${date}T${stopTime}`).isBetween(begin_time, end_time)
+        })
+      }
+      return parsedEvents
+    } else {
+      return null
+    }
   }
 
   @observable eventQueryResult = null;

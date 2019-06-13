@@ -226,7 +226,8 @@ export default class VideoBasedRecorder extends Component {
           onOk={putVideoProp}
           onCancel={switchVideoPropEditorDrawerVisible}
           visible={videoPropEditorDrawerVisible}
-          okText="Submit"
+          okText="Update"
+          okButtonProps={{type: "danger"}}
           cancelText="Cancel"
         >
           {this.renderVideoPropEditorDrawer()}
