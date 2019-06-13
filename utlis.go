@@ -335,8 +335,10 @@ func StoreFileToDatabase(file File, path string) {
 }
 
 func InitDataStorageFiles() (root *Folder) {
+	fmt.Printf("Scanning Data Storage...")
 	root = &Folder{"Public", "", []File{}, []Folder{}}
 	_ = TraverseDirectoriesRecursively(root)
+	fmt.Printf("\rData storage initialized.\n")
 	return
 }
 
