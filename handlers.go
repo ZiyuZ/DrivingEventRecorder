@@ -29,7 +29,9 @@ func getEventDefinition(c *gin.Context) {
 }
 
 func getVideoList(c *gin.Context) {
-	data, err := queryVideos()
+	from := c.DefaultQuery("from", "")
+	to := c.DefaultQuery("to", "")
+	data, err := queryVideos(from, to)
 	if err != nil {
 		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read video list: %v.")
 		return
@@ -41,6 +43,11 @@ func getVideoList(c *gin.Context) {
 		message = "Read video list successfully"
 	}
 	c.JSON(http.StatusOK, &Response{0, message, data})
+}
+
+func getVideoDates(c *gin.Context) {
+	dates := queryVideoDates()
+	c.JSON(http.StatusOK, &Response{0, "Read video dates successfully", dates})
 }
 
 func getVideo(c *gin.Context) {
@@ -91,7 +98,9 @@ func getDataStorageFiles(c *gin.Context) {
 }
 
 func getEvent(c *gin.Context) {
-	data, err := queryEvents()
+	from := c.DefaultQuery("from", "")
+	to := c.DefaultQuery("to", "")
+	data, err := queryEvents(from, to)
 	if err != nil {
 		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read event: %v.")
 		return

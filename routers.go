@@ -56,6 +56,7 @@ func initEngine() *gin.Engine {
 		api.DELETE("/rating", deleteRating)
 
 		api.GET("/videos", getVideoList)
+		api.GET("/video_dates", getVideoDates)
 		api.GET("/video", getVideo)
 		api.PUT("/video", putVideo)
 

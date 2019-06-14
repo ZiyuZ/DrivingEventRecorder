@@ -309,7 +309,7 @@ func StoreFileToDatabase(file File, path string) {
 		} else {
 			videoBeginTime = time.Time{}
 			videoEndTime = time.Time{}
-			videoType = "Unknown"
+			videoType = "U"
 		}
 		if err := insertVideoIfNotExist(&Video{
 			FileName:         file.Name,
@@ -318,6 +318,7 @@ func StoreFileToDatabase(file File, path string) {
 			EndTime:          videoEndTime,
 			Type:             videoType,
 			VideoGPSTimeDiff: 0,
+			Status:           0,
 		}); err != nil {
 			writeLog("FATAL", err)
 		}

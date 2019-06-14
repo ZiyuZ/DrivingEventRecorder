@@ -12,8 +12,8 @@ type (
 		OptionCode string    `json:"option_code" `
 		StartTime  time.Time `json:"start_time"`
 		StopTime   time.Time `json:"stop_time"`
-		//RelatedVideoID int `json:"related_video_id"`  # 可以用于根据事件寻找视频
-		Desc string `json:"desc"`
+		VideoID    int       `json:"video_id"`
+		Desc       string    `json:"desc"`
 	}
 
 	Video struct {
@@ -24,6 +24,13 @@ type (
 		EndTime          time.Time `json:"end_time"`
 		Type             string    `json:"type"` // A: outside (front); B: inside
 		VideoGPSTimeDiff int       `json:"video_gps_time_diff"`
+		// Status:
+		// 0: 待处理 (主要是调整begin/end/v-g diff time和type)
+		// 1: 正在录入事件信息
+		// 2: 录入事件信息完毕, 等待审查
+		// 3: 正在审查事件
+		// 3: 审查完毕, 数据可以使用
+		Status int `json:"status"`
 	}
 
 	Trajectory struct {
@@ -43,8 +50,16 @@ type (
 	}
 )
 
-func queryEvents() (events []Event, err error) {
-	err = DB.Find(&events).Error
+func queryEvents(from string, to string) (events []Event, err error) {
+	if from == "" && to == "" {
+		err = DB.Find(&events).Error
+	} else if from != "" && to != "" {
+		err = DB.Where("begin_time > ? AND begin_time < ?", from, to).Find(&events).Error
+	} else if from != "" && to == "" {
+		err = DB.Where("begin_time > ?", from).Find(&events).Error
+	} else if from == "" && to != "" {
+		err = DB.Where("begin_time < ?", to).Find(&events).Error
+	}
 	return
 }
 
@@ -74,16 +89,35 @@ func queryVideoByID(id int) (video Video, err error) {
 	return
 }
 
-func queryVideos() (videos []Video, err error) {
-	err = DB.Find(&videos).Error
+func queryVideos(from string, to string) (videos []Video, err error) {
+	if from == "" && to == "" {
+		err = DB.Find(&videos).Error
+	} else if from != "" && to != "" {
+		err = DB.Where("begin_time > ? AND begin_time < ?", from, to).Find(&videos).Error
+	} else if from != "" && to == "" {
+		err = DB.Where("begin_time > ?", from).Find(&videos).Error
+	} else if from == "" && to != "" {
+		err = DB.Where("begin_time < ?", to).Find(&videos).Error
+	}
+	return
+}
+
+func queryVideoDates() (dates []string) {
+	var videos []Video
+	DB.Select("begin_time").Find(&videos)
+	temp := map[string]struct{}{}
+	for _, v := range videos {
+		date := v.BeginTime.Format("2006-01-02")
+		if _, ok := temp[date]; !ok {
+			temp[date] = struct{}{}
+			dates = append(dates, date)
+		}
+	}
 	return
 }
 
 func insertVideoIfNotExist(video *Video) (err error) {
-	var videoFounded Video
-	if DB.Where("path = ?", video.Path).First(&videoFounded).RecordNotFound() {
-		return insertVideo(video)
-	}
+	DB.Where("path = ?", video.Path).FirstOrCreate(&video)
 	return
 }
 
@@ -102,6 +136,7 @@ func updateVideo(updatedVideo *Video) (err error) {
 	video.EndTime = updatedVideo.EndTime
 	video.Type = updatedVideo.Type
 	video.VideoGPSTimeDiff = updatedVideo.VideoGPSTimeDiff
+	video.Status = updatedVideo.Status
 	return DB.Save(&video).Error
 }
 
