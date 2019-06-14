@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Button, Card, Col, DatePicker, Icon, Input, InputNumber, Modal, Radio, Row, Select, Tooltip} from "antd";
+import {Button, Card, Col, DatePicker, Icon, Input, InputNumber, Modal, Radio, Row, Select, Steps, Tooltip} from "antd";
 import ReactPlayer from "react-player";
 import {inject, observer} from "mobx-react";
 import "./index.less";
@@ -17,14 +17,20 @@ export default class VideoBasedRecorder extends Component {
   }
 
   renderVideoListItem = () => {
-    return this.thisStore.videoList.map((videoProps) => (
-      <Select.Option value={videoProps.ID}
-                     key={videoProps.ID}>{`${videoProps.ID}. ${videoProps.file_name} (${videoProps.type})`}</Select.Option>
+    const {videoList, videoStatusSteps} = this.thisStore;
+    return videoList.map((videoProps) => (
+      <Select.Option
+        value={videoProps.ID}
+        key={videoProps.ID}
+      >
+        {`${videoProps.ID}. ${videoProps.file_name} (${videoProps.type}, ${videoStatusSteps.find(item => item.statusCode === videoProps.status).desc})`}
+      </Select.Option>
     ))
   };
 
   renderVideoList = () => {
-    const {videoList, videoProps, rootStore} = this.thisStore;
+    const {renderVideoListItem} = this;
+    const {videoList, videoProps, rootStore, updateVideoProp} = this.thisStore;
     const {displayEnglish} = rootStore.GlobalStore;
     if (!videoList) {
       return <Select
@@ -41,7 +47,7 @@ export default class VideoBasedRecorder extends Component {
           (displayEnglish ? "Select a video" : "选择一个视频")}
         optionFilterProp="children"
         onChange={(value) => {
-          this.thisStore.updateVideoProp({key: "ID", value})
+          updateVideoProp("id", value)
         }}
         filterOption={
           (input, option) =>
@@ -50,12 +56,13 @@ export default class VideoBasedRecorder extends Component {
         }
         className="video-list-select"
       >
-        {this.renderVideoListItem()}
+        {renderVideoListItem()}
       </Select>
     }
   };
 
   renderOptions = () => {
+    const {renderVideoList} = this;
     const {
       videoProps,
       playerProps,
@@ -73,14 +80,14 @@ export default class VideoBasedRecorder extends Component {
     // 添加日期选择过滤器
     return <Row gutter={16} className="options-wrap">
       <Col span={6}>
-        {this.renderVideoList()}
+        {renderVideoList()}
       </Col>
       <Col span={6}>
         <DatePicker
           showTime
           disabled={videoProps.isFrozen}
           placeholder={displayEnglish ? "Set video start time" : "设置视频起始时间"}
-          onChange={(time) => updateVideoProp({key: "begin_time", value: time})}
+          onChange={(time) => updateVideoProp("begin_time", time)}
           value={videoProps.begin_time}
           className="date-pick"
         />
@@ -136,73 +143,93 @@ export default class VideoBasedRecorder extends Component {
     </Row>
   };
 
-  renderVideoPropEditorDrawer = () => {
-    const {videoProps, videoList, updateVideoPropEditedFields, videoPropEditableFields} = this.thisStore;
+  renderVideoPropEditorModal = () => {
+    const {videoProps, updateVideoProp, videoStatusSteps} = this.thisStore;
     if (!videoProps.isFrozen) {
       return "Invalid Video!"
     }
-    const {id} = videoProps;
-    const rawProp = videoList.find(value => value.ID === id);
+    const {id, status, video_gps_time_diff, type, begin_time, end_time, file_name, path} = videoProps;
     // 日期改成 DatePicker
     return <>
-      <div className="drawer-item">
-        <div className="drawer-label">ID:</div>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">ID:</div>
         <Tooltip title="Edit not supported now">
-          <Input className="drawer-input" disabled={true} placeholder={rawProp.ID}/>
+          <Input className="video-editor-input" disabled={true} placeholder={id}/>
         </Tooltip>
-      </div>
-      <div className="drawer-item">
-        <div className="drawer-label">File Name:</div>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">File Name:</div>
         <Tooltip title="Edit not supported now">
-          <Input className="drawer-input" disabled={true} placeholder={rawProp.file_name}/>
+          <Input className="video-editor-input" disabled={true} placeholder={file_name}/>
         </Tooltip>
-      </div>
-      <div className="drawer-item">
-        <div className="drawer-label">Path:</div>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">Path:</div>
         <Tooltip title="Edit not supported now">
-          <Input className="drawer-input" disabled={true} placeholder={rawProp.path}/>
+          <Input className="video-editor-input" disabled={true} placeholder={path}/>
         </Tooltip>
-      </div>
-      <div className="drawer-item">
-        <div className="drawer-label">Begin Time:</div>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">Begin Time:</div>
         <Tooltip title="Edit not supported now">
-          <Input className="drawer-input" disabled={true} placeholder={rawProp.begin_time}/>
+          <Input className="video-editor-input" disabled={true}
+                 placeholder={begin_time.format('YYYY-MM-DD HH:mm:ss Z')}/>
         </Tooltip>
-      </div>
-      <div className="drawer-item">
-        <div className="drawer-label">End Time:</div>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">End Time:</div>
         <Tooltip title="Edit not supported now">
-          <Input className="drawer-input" disabled={true} placeholder={rawProp.end_time}/>
+          <Input className="video-editor-input" disabled={true} placeholder={end_time.format('YYYY-MM-DD HH:mm:ss Z')}/>
         </Tooltip>
-      </div>
-      <div className="drawer-item">
-        <div className="drawer-label">Type:</div>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">Type:</div>
         <Radio.Group
-          className="drawer-input drawer-radio"
-          onChange={(e) => updateVideoPropEditedFields('type', e.target.value)}
-          value={videoPropEditableFields.type || rawProp.type}
+          className="video-editor-input video-editor-radio"
+          onChange={(e) => updateVideoProp('type', e.target.value)}
+          value={type}
         >
           <Radio value={"A"}>A: outside (front)</Radio>
           <Radio value={"B"}>B: inside</Radio>
           <Radio value={"U"}>U: Unknown</Radio>
         </Radio.Group>
-      </div>
-      <div className="drawer-item">
-        <div className="drawer-label">Video-GPS Diff:</div>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">Video-GPS Diff:</div>
         <InputNumber
-          className="drawer-input"
-          defaultValue={rawProp.video_gps_time_diff}
+          className="video-editor-input"
+          defaultValue={video_gps_time_diff}
           min={0}
           max={3600}
           formatter={value => `${value} s`}
           parser={value => value.replace(' s', '')}
-          onChange={(value) => updateVideoPropEditedFields('video_gps_time_diff', value)}
+          onChange={(value) => updateVideoProp('video_gps_time_diff', value)}
         />
-      </div>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">Status:</div>
+        <Card size="small" className="video-editor-status">
+          <Steps
+            current={status}
+            direction="vertical"
+            size="small"
+            className="video-editor-status"
+            onChange={(current) => {
+              updateVideoProp('status', current)
+            }}
+            status={status === 4 ? "finish" : "process"}
+          >
+            {videoStatusSteps.map((item, index) => (
+              <Steps.Step key={item.statusCode} title={item.desc} className={index === 4 ? "last-step" : "step"}/>
+            ))}
+          </Steps>
+        </Card>
+      </Row>
     </>
   };
 
   render() {
+    const {renderOptions, renderVideoPropEditorModal} = this;
     const {
       playerProps,
       playerFlipStyle,
@@ -214,7 +241,7 @@ export default class VideoBasedRecorder extends Component {
     const {displayEnglish} = rootStore.GlobalStore;
     return (
       <Card title={this.props.store.GlobalStore.appTexts.pageTitles[1]} className="main card-wrap">
-        {this.renderOptions()}
+        {renderOptions()}
         <ReactPlayer {...playerProps} style={playerFlipStyle} className="player"/>
         <div className="video-event-recorder-wrap">
           {playerProps.url ? <EventRecorder/> : null}
@@ -230,7 +257,7 @@ export default class VideoBasedRecorder extends Component {
           okButtonProps={{type: "danger"}}
           cancelText="Cancel"
         >
-          {this.renderVideoPropEditorDrawer()}
+          {renderVideoPropEditorModal()}
         </Modal>
       </Card>
     );

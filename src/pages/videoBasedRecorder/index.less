@@ -37,24 +37,36 @@
   height: calc(100% - 40vh - 64px);
 }
 
-.drawer-item {
+.video-editor-item {
   margin-bottom: 10px;
 
-  .drawer-label {
+  .video-editor-label {
     width: 22%;
     text-align: right;
     margin-right: 5px;
     display: inline-block;
   }
 
-  .drawer-input {
+  .video-editor-input {
     display: inline-block;
     width: 75%;
   }
 
-  .drawer-radio {
+  .video-editor-radio {
     display: inline-block;
     text-align: center;
     width: 76%;
+  }
+
+  .video-editor-status {
+    margin-left: 2px;
+    display: inline-block;
+    width: 74%;
+
+    .last-step {
+      .ant-steps-item-content {
+        min-height: 0;
+      }
+    }
   }
 }

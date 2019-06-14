@@ -32,14 +32,28 @@ export default class VideoBasedRecorderStore {
     end_time: null,
     type: null,
     video_gps_time_diff: 0,
+    status: -1,
     playbackTime: null,
     isFrozen: false,
   };
+
+  @computed get videoStatusSteps() {
+    return this.rootStore.GlobalStore.displayEnglish ? [
+      {statusCode: 0, desc: 'Pending',},
+      {statusCode: 1, desc: 'Entering Events'},
+      {statusCode: 2, desc: 'Waiting for review'},
+      {statusCode: 3, desc: 'Reviewing'},
+      {statusCode: 4, desc: 'Review done'}
+    ] : [
+      {statusCode: 0, desc: '待处理',},
+      {statusCode: 1, desc: '正在录入事件信息'},
+      {statusCode: 2, desc: '录入完毕, 等待检查'},
+      {statusCode: 3, desc: '正在检查事件信息'},
+      {statusCode: 4, desc: '检查完毕'}
+    ];
+  }
+
   @observable videoPropEditorDrawerVisible = false;
-  @observable videoPropEditableFields = {
-    type: null,
-    video_gps_time_diff: null
-  };
 
   @action releaseVideo = () => {
     runInAction(() => {
@@ -99,9 +113,9 @@ export default class VideoBasedRecorderStore {
     return begin_time && playbackTime !== null ? begin_time.add(playbackTime, 's') : null;
   }
 
-  @action updateVideoProp = videoProp => {
-    if (videoProp.key.toLowerCase() === 'id' && this.videoProps.id !== videoProp.value) {
-      const {ID, file_name, path, begin_time, end_time, video_gps_time_diff, type} = this.videoList.find(value => value.ID === videoProp.value);
+  @action updateVideoProp = (key, value) => {
+    if (key.toLowerCase() === 'id' && this.videoProps.id !== value) {
+      const {ID, file_name, path, begin_time, end_time, video_gps_time_diff, type, status} = this.videoList.find(item => item.ID === value);
       this.videoProps = {
         id: ID,
         file_name,
@@ -109,10 +123,11 @@ export default class VideoBasedRecorderStore {
         begin_time: moment(begin_time),
         end_time: moment(end_time),
         type,
-        video_gps_time_diff
-      }
+        video_gps_time_diff,
+        status
+      };
     }
-    this.videoProps[videoProp.key] = videoProp.value;
+    this.videoProps[key] = value;
   };
 
   @observable
@@ -136,10 +151,7 @@ export default class VideoBasedRecorderStore {
       this.switchPlaying(true);
     },
     onProgress: (e) => {
-      this.updateVideoProp({
-        key: 'playbackTime',
-        value: e.playedSeconds
-      });
+      this.updateVideoProp('playbackTime', e.playedSeconds);
     },
     onDuration: (duration) => {
       notification.open({
@@ -149,10 +161,7 @@ export default class VideoBasedRecorderStore {
     },
     onPause: (e) => {
       runInAction(() => {
-        this.updateVideoProp({
-          key: 'playbackTime',
-          value: e.target.currentTime
-        });
+        this.updateVideoProp('playbackTime', e.target.currentTime);
         this.switchPlaying(false);
       });
     },
@@ -162,10 +171,7 @@ export default class VideoBasedRecorderStore {
       console.error("Error: " + JSON.stringify(err))
     },
     onSeek: (playbackTime) => {
-      this.updateVideoProp({
-        key: 'playbackTime',
-        value: playbackTime
-      });
+      this.updateVideoProp('playbackTime', playbackTime);
     }
   };
 
@@ -184,18 +190,22 @@ export default class VideoBasedRecorderStore {
     });
   };
 
-  @action updateVideoPropEditedFields = (key, value) => {
-    this.videoPropEditableFields[key] = value;
-  };
-
   @action switchVideoPropEditorDrawerVisible = () => {
+    if (this.videoPropEditorDrawerVisible) {
+      // reset video props
+      console.log('reset video prop');
+      const {video_gps_time_diff, type, status} = this.videoList.find(item => item.ID === this.videoProps.id);
+      this.updateVideoProp('video_gps_time_diff', video_gps_time_diff);
+      this.updateVideoProp('type', type);
+      this.updateVideoProp('status', status);
+    }
     this.videoPropEditorDrawerVisible = !this.videoPropEditorDrawerVisible;
   };
 
   @action putVideoProp = () => {
-    const {id, file_name, path, begin_time, end_time, type, video_gps_time_diff} = this.videoProps;
-    const {type: newType, video_gps_time_diff: newDt} = this.videoPropEditableFields;
-    if (newType === null && newDt === null || type === newType && video_gps_time_diff === newDt) {
+    const {id, file_name, path, begin_time, end_time, type, video_gps_time_diff, status} = this.videoProps;
+    const rawProp = this.videoList.find((value) => value.ID === id);
+    if (type === rawProp.type && video_gps_time_diff === rawProp.video_gps_time_diff && status === rawProp.status) {
       notification.error({message: "No props has been updated."});
       return;
     }
@@ -205,8 +215,9 @@ export default class VideoBasedRecorderStore {
       path,
       begin_time: begin_time.format('YYYY-MM-DDTHH:mm:ssZ'),
       end_time: end_time.format('YYYY-MM-DDTHH:mm:ssZ'),
-      type: newType === null ? type : newType,
-      video_gps_time_diff: newDt === null ? video_gps_time_diff : newDt
+      type,
+      video_gps_time_diff,
+      status
     };
     Axios.ajax({
       url: backendConfig.videoApi,
@@ -215,7 +226,7 @@ export default class VideoBasedRecorderStore {
     }).then(() => {
       runInAction(() => {
         this.fetchVideoList();
-        this.switchVideoPropEditorDrawerVisible();
+        this.videoPropEditorDrawerVisible = !this.videoPropEditorDrawerVisible;
       })
     });
   };

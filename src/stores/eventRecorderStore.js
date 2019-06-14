@@ -146,11 +146,12 @@ export default class EventRecorderStore {
 
   @action handleSubmit = index => {
     const targetElement = toJS(this.staging[index]);
-    const {realTime} = this.rootStore.VideoBasedRecorder;
+    const {realTime, videoProps} = this.rootStore.VideoBasedRecorder;
     // processing element
     targetElement.stop_time = realTime.format("YYYY-MM-DDTHH:mm:ssZ");
     targetElement.option_code = targetElement.option_code.join(",");
     targetElement.desc = targetElement.desc || "";
+    targetElement.video_id = videoProps.isFrozen ? videoProps.id : -1;
     //submit event
     this.postEvent(targetElement).then(() => {
       this.deleteElementFromStaging(index);
