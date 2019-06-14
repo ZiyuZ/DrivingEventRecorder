@@ -9,6 +9,7 @@ export default {
   eventApi: "/api/event",
   ratingApi: "/api/rating",
   videoListApi: "/api/videos",
+  videoDatesApi: "/api/video_dates",
   videoApi: "/api/video",
   trajectoryListApi: "/api/trajectories",
   trajectoryApi: "/api/trajectory"

@@ -20,6 +20,11 @@ export default class EventDataViewStore {
         key: "key"
       },
       {
+        title: displayEnglish ? "Video ID" : "视频编号",
+        dataIndex: "videoID",
+        key: "videoID"
+      },
+      {
         title: displayEnglish ? "Date" : "日期",
         dataIndex: "date",
         key: "date"
@@ -84,7 +89,8 @@ export default class EventDataViewStore {
       option_code,
       start_time,
       stop_time,
-      desc
+      desc,
+      video_id
     } = event;
     const descIndex = this.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     //parse event code
@@ -98,6 +104,7 @@ export default class EventDataViewStore {
     });
     return {
       key: ID,
+      videoID: video_id,
       date: utils.parseTime(start_time, true, false),
       startTime: utils.parseTime(start_time, false, true),
       stopTime: utils.parseTime(stop_time, false, true),
@@ -108,9 +115,16 @@ export default class EventDataViewStore {
   };
 
   @action fetchEventData = () => {
+    const {videoProps} = this.rootStore.VideoBasedRecorder;
+    const params = videoProps.isFrozen ? {
+      from: videoProps.begin_time.format('YYYY-MM-DDTHH:mm:ssZ'),
+      to: videoProps.end_time.format('YYYY-MM-DDTHH:mm:ssZ')
+    } : undefined;
+
     Axios.ajax({
       url: backendConfig.eventApi,
-      method: "GET"
+      method: "GET",
+      params
     }).then(res => {
       runInAction(() => {
         this.eventQueryResult = res.data;

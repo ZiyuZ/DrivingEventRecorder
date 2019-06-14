@@ -21,6 +21,7 @@ export default class DataView extends Component {
       render: (text, record) => {
         return <Button
           type="danger"
+          size="small"
           onClick={() => deleteEventById(record.key)}
         >
           Delete
@@ -61,13 +62,14 @@ export default class DataView extends Component {
   };
 
   render() {
+    const {renderTable} = this;
     return (
       <Card
         title={this.props.store.GlobalStore.appTexts.pageTitles[4]}
         className="main card-wrap"
         extra={this.renderDownloadCSVButton()}
       >
-        {this.renderTable()}
+        {renderTable()}
       </Card>
     );
   }

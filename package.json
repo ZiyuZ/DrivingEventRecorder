@@ -1,6 +1,6 @@
 {
   "file_name": "driving_event_recorder_frontend",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "private": true,
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.4.4",

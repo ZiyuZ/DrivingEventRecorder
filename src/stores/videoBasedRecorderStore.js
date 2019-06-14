@@ -11,18 +11,29 @@ export default class VideoBasedRecorderStore {
     this.rootStore = rootStore;
   }
 
-  @observable videoList = null;
+  @observable videoFilterDate = null;
+  @observable videoDates = null;
 
-  @action fetchVideoList = () => {
-    Axios.ajax({
-      url: backendConfig.videoListApi,
-      method: "GET"
-    }).then((res) => {
-      runInAction(() => {
-        this.videoList = res.data || [];
-      })
-    })
+  @observable videoList = null;
+  @observable videoPropEditorModalVisible = false;
+  @observable videoFilterModalVisible = false;
+
+  @action updateVideoFilterDate = (date) => {
+    this.videoFilterDate = date;
+    this.videoProps = {
+      id: null,
+      file_name: null,
+      path: null,
+      begin_time: null,
+      end_time: null,
+      type: null,
+      video_gps_time_diff: 0,
+      status: -1,
+      playbackTime: null,
+      isFrozen: false,
+    };
   };
+
 
   @observable videoProps = {
     id: null,
@@ -53,7 +64,6 @@ export default class VideoBasedRecorderStore {
     ];
   }
 
-  @observable videoPropEditorDrawerVisible = false;
 
   @action releaseVideo = () => {
     runInAction(() => {
@@ -190,17 +200,48 @@ export default class VideoBasedRecorderStore {
     });
   };
 
-  @action switchVideoPropEditorDrawerVisible = () => {
-    if (this.videoPropEditorDrawerVisible) {
+  @action fetchVideoList = () => {
+    const params = this.videoFilterDate ? {
+      from: this.videoFilterDate.format('YYYY-MM-DD'),
+      to: this.videoFilterDate.clone().add(1, 'day').format('YYYY-MM-DD')
+    } : undefined;
+    Axios.ajax({
+      url: backendConfig.videoListApi,
+      method: "GET",
+      params
+    }).then((res) => {
+      runInAction(() => {
+        this.videoList = res.data || [];
+      })
+    })
+  };
+
+  @action fetchVideoDates = () => {
+    Axios.ajax({
+      url: backendConfig.videoDatesApi,
+      method: "GET"
+    }).then((res) => {
+      runInAction(() => {
+        this.videoDates = res.data || [];
+      })
+    })
+  };
+
+  @action switchVideoPropEditorModalVisible = () => {
+    if (this.videoPropEditorModalVisible) {
       // reset video props
-      console.log('reset video prop');
       const {video_gps_time_diff, type, status} = this.videoList.find(item => item.ID === this.videoProps.id);
       this.updateVideoProp('video_gps_time_diff', video_gps_time_diff);
       this.updateVideoProp('type', type);
       this.updateVideoProp('status', status);
     }
-    this.videoPropEditorDrawerVisible = !this.videoPropEditorDrawerVisible;
+    this.videoPropEditorModalVisible = !this.videoPropEditorModalVisible;
   };
+
+  @action switchVideoFilterModalVisible = () => {
+    this.videoFilterModalVisible = !this.videoFilterModalVisible;
+  };
+
 
   @action putVideoProp = () => {
     const {id, file_name, path, begin_time, end_time, type, video_gps_time_diff, status} = this.videoProps;
@@ -226,7 +267,7 @@ export default class VideoBasedRecorderStore {
     }).then(() => {
       runInAction(() => {
         this.fetchVideoList();
-        this.videoPropEditorDrawerVisible = !this.videoPropEditorDrawerVisible;
+        this.videoPropEditorModalVisible = !this.videoPropEditorModalVisible;
       })
     });
   };
