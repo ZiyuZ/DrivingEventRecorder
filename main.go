@@ -14,7 +14,7 @@ var (
 	F  *Folder
 	DB *gorm.DB
 
-	_VERSION_ = "2.0.0"
+	_VERSION_ = "2.0.1"
 )
 
 func init() {

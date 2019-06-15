@@ -54,11 +54,11 @@ func queryEvents(from string, to string) (events []Event, err error) {
 	if from == "" && to == "" {
 		err = DB.Find(&events).Error
 	} else if from != "" && to != "" {
-		err = DB.Where("begin_time > ? AND begin_time < ?", from, to).Find(&events).Error
+		err = DB.Where("start_time > ? AND start_time < ?", from, to).Find(&events).Error
 	} else if from != "" && to == "" {
-		err = DB.Where("begin_time > ?", from).Find(&events).Error
+		err = DB.Where("start_time > ?", from).Find(&events).Error
 	} else if from == "" && to != "" {
-		err = DB.Where("begin_time < ?", to).Find(&events).Error
+		err = DB.Where("start_time < ?", to).Find(&events).Error
 	}
 	return
 }
