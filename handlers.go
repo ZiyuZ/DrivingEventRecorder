@@ -100,7 +100,12 @@ func getDataStorageFiles(c *gin.Context) {
 func getEvent(c *gin.Context) {
 	from := c.DefaultQuery("from", "")
 	to := c.DefaultQuery("to", "")
-	data, err := queryEvents(from, to)
+	videoID, err := strconv.Atoi(c.DefaultQuery("video_id", "0"))
+	if err != nil {
+		errorReport(c, err, http.StatusBadRequest, 2, "Invalid video_id: %v.")
+		return
+	}
+	data, err := queryEvents(from, to, videoID)
 	if err != nil {
 		errorReport(c, err, http.StatusInternalServerError, 1, "Failed to read event: %v.")
 		return

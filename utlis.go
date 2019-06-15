@@ -254,7 +254,7 @@ func TraverseDirectoriesRecursively(folder *Folder) (err error) {
 	var files []os.FileInfo
 	files, err = ioutil.ReadDir(filepath.Join(C.DataPath, folder.Path))
 	if err != nil {
-		fmt.Printf("%v\n", err)
+		writeLog("WARN", err)
 		return err
 	}
 	for _, f := range files {
@@ -319,6 +319,8 @@ func StoreFileToDatabase(file File, path string) {
 			Type:             videoType,
 			VideoGPSTimeDiff: 0,
 			Status:           0,
+			Recorder:         "",
+			Reviewer:         "",
 		}); err != nil {
 			writeLog("FATAL", err)
 		}

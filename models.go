@@ -30,7 +30,9 @@ type (
 		// 2: 录入事件信息完毕, 等待审查
 		// 3: 正在审查事件
 		// 3: 审查完毕, 数据可以使用
-		Status int `json:"status"`
+		Status   int    `json:"status"`
+		Recorder string `json:"recorder"`
+		Reviewer string `json:"reviewer"`
 	}
 
 	Trajectory struct {
@@ -50,15 +52,17 @@ type (
 	}
 )
 
-func queryEvents(from string, to string) (events []Event, err error) {
-	if from == "" && to == "" {
+func queryEvents(from string, to string, videoID int) (events []Event, err error) {
+	if videoID != 0 {
+		err = DB.Where("video_id = ?", videoID).Find(&events).Error
+	} else if from == "" && to == "" {
 		err = DB.Find(&events).Error
 	} else if from != "" && to != "" {
-		err = DB.Where("start_time > ? AND start_time < ?", from, to).Find(&events).Error
+		err = DB.Where("start_time >= ? AND start_time <= ?", from, to).Find(&events).Error
 	} else if from != "" && to == "" {
-		err = DB.Where("start_time > ?", from).Find(&events).Error
+		err = DB.Where("start_time >= ?", from).Find(&events).Error
 	} else if from == "" && to != "" {
-		err = DB.Where("start_time < ?", to).Find(&events).Error
+		err = DB.Where("start_time <= ?", to).Find(&events).Error
 	}
 	return
 }
@@ -93,11 +97,11 @@ func queryVideos(from string, to string) (videos []Video, err error) {
 	if from == "" && to == "" {
 		err = DB.Find(&videos).Error
 	} else if from != "" && to != "" {
-		err = DB.Where("begin_time > ? AND begin_time < ?", from, to).Find(&videos).Error
+		err = DB.Where("begin_time >= ? AND begin_time <= ?", from, to).Find(&videos).Error
 	} else if from != "" && to == "" {
-		err = DB.Where("begin_time > ?", from).Find(&videos).Error
+		err = DB.Where("begin_time >= ?", from).Find(&videos).Error
 	} else if from == "" && to != "" {
-		err = DB.Where("begin_time < ?", to).Find(&videos).Error
+		err = DB.Where("begin_time <= ?", to).Find(&videos).Error
 	}
 	return
 }
@@ -137,6 +141,8 @@ func updateVideo(updatedVideo *Video) (err error) {
 	video.Type = updatedVideo.Type
 	video.VideoGPSTimeDiff = updatedVideo.VideoGPSTimeDiff
 	video.Status = updatedVideo.Status
+	video.Recorder = updatedVideo.Recorder
+	video.Reviewer = updatedVideo.Reviewer
 	return DB.Save(&video).Error
 }
 
