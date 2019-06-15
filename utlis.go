@@ -369,7 +369,6 @@ func getCampusNetworkInfo() (ip string, desc string) {
 
 	var CNState CampusNetworkState
 	err = json.NewDecoder(r.Body).Decode(&CNState)
-	fmt.Printf("%v+", CNState)
 	if err != nil {
 		return "", "The server has failed to parse the campus network information."
 	}

@@ -1,9 +1,9 @@
 [main]
-call_browser = true  # open browser automatically when the program starts
+call_browser = false  # open browser automatically when the program starts
 
 [dev]
 debug = true
-log = false
+log = true
 log_path = "recorder.log"  # will be ignore if "log" is false
 
 [data]
