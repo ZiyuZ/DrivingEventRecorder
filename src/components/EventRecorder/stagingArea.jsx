@@ -2,6 +2,7 @@ import React, {Component} from "react";
 import {inject, observer} from "mobx-react";
 import {Button, Card, Empty, Icon, List, Popconfirm, Tooltip} from "antd";
 import utils from "../../utils/utils"
+import moment from "moment";
 
 @inject("store")
 @observer
@@ -55,7 +56,7 @@ export default class StagingArea extends Component {
     const descIndex = this.thisStore.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     return (
       <List.Item
-        actions={this.renderActions(index, utils.parseTime(item.start_time))}
+        actions={this.renderActions(index, moment(item.start_time).format('YYYY-MM-DD HH:mm:ss'))}
       >
         {this.renderItemMeta(item)}
         {item.desc ? (

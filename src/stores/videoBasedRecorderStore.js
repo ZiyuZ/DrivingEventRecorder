@@ -46,6 +46,8 @@ export default class VideoBasedRecorderStore {
     status: -1,
     playbackTime: null,
     isFrozen: false,
+    recorder: '',
+    reviewer: ''
   };
 
   @computed get videoStatusSteps() {
@@ -64,17 +66,11 @@ export default class VideoBasedRecorderStore {
     ];
   }
 
-
-  @action releaseVideo = () => {
-    runInAction(() => {
-      this.videoProps.isFrozen = false;
-      this.videoProps.playbackTime = null;
-      this.playerProps.url = null;
-      // this.playerProps.playbackRate = 1.0;
-      this.playerVerticalFlip = false;
-      this.playerHorizontalFlip = false;
-    });
-  };
+  @computed get realTime() {
+    const {begin_time, playbackTime} = this.videoProps;
+    // 在进行 moment().add() 时需要 clone(), 否则会修改原值
+    return begin_time && playbackTime !== null ? begin_time.clone().add(playbackTime, 'seconds') : null;
+  }
 
   @observable playerVerticalFlip = false;
   @observable playerHorizontalFlip = false;
@@ -118,14 +114,21 @@ export default class VideoBasedRecorderStore {
     }
   };
 
-  @computed get realTime() {
-    const {begin_time, playbackTime} = this.videoProps;
-    return begin_time && playbackTime !== null ? begin_time.add(playbackTime, 'seconds') : null;
-  }
+  @action releaseVideo = () => {
+    runInAction(() => {
+      this.videoProps.isFrozen = false;
+      this.videoProps.playbackTime = null;
+      this.playerProps.url = null;
+      // this.playerProps.playbackRate = 1.0;
+      this.playerVerticalFlip = false;
+      this.playerHorizontalFlip = false;
+      this.fetchVideoList();
+    });
+  };
 
   @action updateVideoProp = (key, value) => {
     if (key.toLowerCase() === 'id' && this.videoProps.id !== value) {
-      const {ID, file_name, path, begin_time, end_time, video_gps_time_diff, type, status} = this.videoList.find(item => item.ID === value);
+      const {ID, file_name, path, begin_time, end_time, video_gps_time_diff, type, status, recorder, reviewer} = this.videoList.find(item => item.ID === value);
       this.videoProps = {
         id: ID,
         file_name,
@@ -134,7 +137,9 @@ export default class VideoBasedRecorderStore {
         end_time: moment(end_time),
         type,
         video_gps_time_diff,
-        status
+        status,
+        recorder,
+        reviewer
       };
     }
     this.videoProps[key] = value;
@@ -181,6 +186,7 @@ export default class VideoBasedRecorderStore {
       console.error("Error: " + JSON.stringify(err))
     },
     onSeek: (playbackTime) => {
+      console.log('seek', playbackTime)
       this.updateVideoProp('playbackTime', playbackTime);
     }
   };
@@ -244,9 +250,15 @@ export default class VideoBasedRecorderStore {
 
 
   @action putVideoProp = () => {
-    const {id, file_name, path, begin_time, end_time, type, video_gps_time_diff, status} = this.videoProps;
+    const {id, file_name, path, begin_time, end_time, type, video_gps_time_diff, status, recorder, reviewer} = this.videoProps;
     const rawProp = this.videoList.find((value) => value.ID === id);
-    if (type === rawProp.type && video_gps_time_diff === rawProp.video_gps_time_diff && status === rawProp.status) {
+    if (
+      type === rawProp.type &&
+      video_gps_time_diff === rawProp.video_gps_time_diff &&
+      status === rawProp.status &&
+      recorder === rawProp.recorder &&
+      reviewer === rawProp.reviewer
+    ) {
       notification.error({message: "No props has been updated."});
       return;
     }
@@ -258,7 +270,9 @@ export default class VideoBasedRecorderStore {
       end_time: end_time.format('YYYY-MM-DDTHH:mm:ssZ'),
       type,
       video_gps_time_diff,
-      status
+      status,
+      recorder,
+      reviewer
     };
     Axios.ajax({
       url: backendConfig.videoApi,

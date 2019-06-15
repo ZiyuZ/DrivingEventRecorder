@@ -24,7 +24,7 @@ export default class VideoBasedRecorder extends Component {
         value={videoProps.ID}
         key={videoProps.ID}
       >
-        {`${videoProps.ID}. ${videoProps.file_name} (${videoProps.type}, ${videoStatusSteps.find(item => item.statusCode === videoProps.status).desc})`}
+        {`${videoProps.ID}. ${videoProps.file_name} (${videoStatusSteps.find(item => item.statusCode === videoProps.status).desc})`}
       </Select.Option>
     ))
   };
@@ -167,7 +167,7 @@ export default class VideoBasedRecorder extends Component {
     if (!videoProps.isFrozen) {
       return "Invalid Video!"
     }
-    const {id, status, video_gps_time_diff, type, begin_time, end_time, file_name, path} = videoProps;
+    const {id, status, video_gps_time_diff, type, begin_time, end_time, file_name, path, recorder, reviewer} = videoProps;
     // 日期改成 DatePicker
     return <>
       <Row className="video-editor-item" type="flex" align="middle">
@@ -200,6 +200,16 @@ export default class VideoBasedRecorder extends Component {
         <Tooltip title="Edit not supported now">
           <Input className="video-editor-input" disabled={true} placeholder={end_time.format('YYYY-MM-DD HH:mm:ss Z')}/>
         </Tooltip>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">Recorder:</div>
+        <Input className="video-editor-input" placeholder={recorder}
+               onChange={(e) => updateVideoProp('recorder', e.target.value)}/>
+      </Row>
+      <Row className="video-editor-item" type="flex" align="middle">
+        <div className="video-editor-label">Reviewer:</div>
+        <Input className="video-editor-input" placeholder={reviewer}
+               onChange={(e) => updateVideoProp('reviewer', e.target.value)}/>
       </Row>
       <Row className="video-editor-item" type="flex" align="middle">
         <div className="video-editor-label">Type:</div>
@@ -253,7 +263,7 @@ export default class VideoBasedRecorder extends Component {
       <DatePicker
         format="YYYY-MM-DD"
         showToday={false}
-        defaultPickerValue={moment('2018-12-17', 'YYYY-MM-DD')}
+        defaultPickerValue={moment('2018-12-12', 'YYYY-MM-DD')}
         onChange={updateVideoFilterDate}
         style={{width: "100%", marginTop: "10px"}}
         dateRender={current => {

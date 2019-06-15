@@ -3,6 +3,7 @@ import {notification} from "antd";
 import Axios from "../utils/axios";
 import backendConfig from "../config/backendConfig";
 import utils from "../utils/utils"
+import moment from "moment";
 
 configure({enforceActions: "always"});
 
@@ -71,7 +72,7 @@ export default class EventRecorderStore {
     const {realTime} = this.rootStore.VideoBasedRecorder;
     this.updateThisEvent({
       event_id,
-      start_time: realTime.format("YYYY-MM-DDTHH:mm:ssZ")
+      start_time: (realTime ? realTime : moment()).format("YYYY-MM-DDTHH:mm:ssZ")
     });
     this.setModalVisible(true);
   };
