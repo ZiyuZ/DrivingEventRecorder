@@ -91,7 +91,7 @@ export default class EventDataViewStore {
     });
     return {
       key: ID,
-      videoID: video_id,
+      videoID: video_id === -1 ? "-" : video_id,
       date: utils.parseTime(start_time, true, false),
       startTime: utils.parseTime(start_time, false, true),
       stopTime: utils.parseTime(stop_time, false, true),
@@ -138,5 +138,5 @@ export default class EventDataViewStore {
         this.eventQueryResult = this.eventQueryResult.filter(event => event.ID !== id);
       })
     });
-  }
+  };
 }

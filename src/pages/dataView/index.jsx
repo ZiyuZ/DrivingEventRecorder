@@ -1,8 +1,9 @@
 import React, {Component} from "react";
 import {inject, observer} from "mobx-react";
-import {Alert, Button, Card, Spin, Table} from "antd";
+import {Alert, Button, Card, Popconfirm, Spin, Table, Tooltip} from "antd";
 import {CSVLink} from "react-csv";
-import utils from "../../utils/utils"
+import utils from "../../utils/utils";
+import "./index.less";
 
 @inject("store")
 @observer
@@ -14,18 +15,29 @@ export default class DataView extends Component {
   };
 
   renderColumns = () => {
-    const {columns, deleteEventById} = this.thisStore;
+    const {columns, deleteEventById, rootStore} = this.thisStore;
     const action = {
-      title: "Action",
-      key: "action",
+      title: rootStore.GlobalStore.displayEnglish ? "Operation" : "操作",
+      key: "operation",
       render: (text, record) => {
-        return <Button
-          type="danger"
-          size="small"
-          onClick={() => deleteEventById(record.key)}
-        >
-          Delete
-        </Button>
+        return <div className="table-item-operations">
+          <Tooltip title="Delete">
+            <Popconfirm
+              title="Delete this event?"
+              onConfirm={() => deleteEventById(record.key)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button
+                className="operation-button"
+                type="danger"
+                icon="delete"
+                size="small"
+                shape="circle"
+              />
+            </Popconfirm>
+          </Tooltip>
+        </div>
       }
     };
     return columns.concat([action]);

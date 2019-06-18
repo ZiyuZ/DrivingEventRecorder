@@ -149,7 +149,7 @@ export default class EventRecorderStore {
     const targetElement = toJS(this.staging[index]);
     const {realTime, videoProps} = this.rootStore.VideoBasedRecorder;
     // processing element
-    targetElement.stop_time = realTime.format("YYYY-MM-DDTHH:mm:ssZ");
+    targetElement.stop_time = (realTime || moment()).format("YYYY-MM-DDTHH:mm:ssZ");
     targetElement.option_code = targetElement.option_code.join(",");
     targetElement.desc = targetElement.desc || "";
     targetElement.video_id = videoProps.isFrozen ? videoProps.id : -1;

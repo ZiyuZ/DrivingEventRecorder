@@ -52,16 +52,16 @@ export default class VideoBasedRecorderStore {
 
   @computed get videoStatusSteps() {
     return this.rootStore.GlobalStore.displayEnglish ? [
-      {statusCode: 0, desc: 'Pending',},
-      {statusCode: 1, desc: 'Entering Events'},
-      {statusCode: 2, desc: 'Waiting for review'},
+      {statusCode: 0, desc: 'Unprocessed',},
+      {statusCode: 1, desc: 'Collecting events'},
+      {statusCode: 2, desc: 'Finish Collecting'},
       {statusCode: 3, desc: 'Reviewing'},
-      {statusCode: 4, desc: 'Review done'}
+      {statusCode: 4, desc: 'Finish Reviewing'}
     ] : [
       {statusCode: 0, desc: '待处理',},
-      {statusCode: 1, desc: '正在录入事件信息'},
-      {statusCode: 2, desc: '录入完毕, 等待检查'},
-      {statusCode: 3, desc: '正在检查事件信息'},
+      {statusCode: 1, desc: '正在录入'},
+      {statusCode: 2, desc: '录入完毕'},
+      {statusCode: 3, desc: '正在检查'},
       {statusCode: 4, desc: '检查完毕'}
     ];
   }
@@ -192,11 +192,18 @@ export default class VideoBasedRecorderStore {
   };
 
   @action loadVideo = () => {
-    const {file_name, path} = this.videoProps;
+    const {file_name, path, begin_time, end_time} = this.videoProps;
     if (!file_name || !path) {
       notification.error({
-        message: "ValueError",
-        description: "Invalid video!"
+        message: "Invalid video",
+        description: "A valid file name or path is missing. Please check if you have selected a video."
+      });
+      return;
+    }
+    if (!moment.isMoment(begin_time) || !moment.isMoment(end_time)) {
+      notification.error({
+        message: "Invalid datetime",
+        description: "A valid datetime is missing. Please check if you have selected datetime."
       });
       return;
     }

@@ -1,8 +1,7 @@
 import React, {Component} from "react";
 import {inject, observer} from "mobx-react";
-import {Modal, Radio, Checkbox, Input, List} from "antd";
+import {Checkbox, Input, List, Modal, Radio} from "antd";
 import "./index.less";
-import {toJS} from "mobx";
 
 @inject("store")
 @observer
