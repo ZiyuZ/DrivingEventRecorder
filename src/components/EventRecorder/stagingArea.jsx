@@ -91,7 +91,7 @@ export default class StagingArea extends Component {
   render() {
     return (
       <Card
-        title={this.thisStore.rootStore.GlobalStore.displayEnglish ? "Staging Area" : "暂存区"}
+        title={this.thisStore.rootStore.GlobalStore.displayEnglish ? "Recording" : "正在记录"}
         type="inner"
         bordered
         className="children-card"

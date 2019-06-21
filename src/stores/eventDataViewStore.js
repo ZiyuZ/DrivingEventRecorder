@@ -10,52 +10,6 @@ export default class EventDataViewStore {
     this.rootStore = rootStore;
   }
 
-  @computed get columns() {
-    const {displayEnglish} = this.rootStore.GlobalStore;
-    return [
-      {
-        title: "ID",
-        dataIndex: "key",
-        key: "key"
-      },
-      {
-        title: displayEnglish ? "Video ID" : "视频编号",
-        dataIndex: "videoID",
-        key: "videoID"
-      },
-      {
-        title: displayEnglish ? "Date" : "日期",
-        dataIndex: "date",
-        key: "date"
-      },
-      {
-        title: displayEnglish ? "Event Start Time" : "开始时间",
-        dataIndex: "startTime",
-        key: "startTime"
-      },
-      {
-        title: displayEnglish ? "Event Stop Time" : "结束时间",
-        dataIndex: "stopTime",
-        key: "stopTime"
-      },
-      {
-        title: displayEnglish ? "Event ID" : "事件编号",
-        dataIndex: "eventID",
-        key: "eventID"
-      },
-      {
-        title: displayEnglish ? "Event Details" : "事件细节",
-        dataIndex: "optionCode",
-        key: "optionCode"
-      },
-      {
-        title: displayEnglish ? "Note" : "备注",
-        dataIndex: "desc",
-        key: "desc"
-      }
-    ];
-  }
-
   @computed get eventDefinition() {
     return this.rootStore.EventDefinition.eventDefinition;
   }
@@ -95,7 +49,7 @@ export default class EventDataViewStore {
       date: utils.parseTime(start_time, true, false),
       startTime: utils.parseTime(start_time, false, true),
       stopTime: utils.parseTime(stop_time, false, true),
-      eventID: thisEventDefinition.desc[descIndex],
+      eventName: thisEventDefinition.desc[descIndex],
       optionCode: eventCodeList.join(", "),
       desc: desc[descIndex]
     };

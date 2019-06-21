@@ -150,11 +150,11 @@ class VideoSelector extends Component {
       }}
       onCancel={switchVideoFilterModalVisible}
       visible={videoFilterModalVisible}
-      okText={displayEnglish ? "Fetch Videos" : "读取视频列表"}
+      okText={displayEnglish ? "Fetch Videos" : "加载视频列表"}
       cancelText={displayEnglish ? "Cancel" : "取消"}
       width={330}
     >
-      {displayEnglish ? 'Leave blank will obtain all videos. The date with videos has been circled.' : '留空将获取全部视频, 被圈起的是有视频的日期.'}
+      {displayEnglish ? 'The date with videos has been circled. Leave blank will obtain all videos.' : '被圈起的是有视频的日期, 留空将获取全部视频.'}
       {renderDatePicker()}
     </Modal>
   };

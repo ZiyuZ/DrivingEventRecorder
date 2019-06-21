@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import "./index.less";
 import {inject, observer} from "mobx-react";
-import {Descriptions, Input, InputNumber, Modal, Radio, Steps, Tooltip} from "antd";
+import {Descriptions, Input, InputNumber, Modal, notification, Radio, Steps, Tooltip} from "antd";
 
 @inject("store")
 @observer
@@ -27,8 +27,15 @@ class VideoPropEditorModal extends Component {
         </Tooltip>
       </Descriptions.Item>
       <Descriptions.Item label={displayEnglish ? "Recorder" : "采集人"} span={1}>
-        <Input className="video-editor-input" placeholder={recorder}
+        {status > 1 ?
+          <Tooltip
+            title={displayEnglish ? "Not allowed to modify the recorder after the entry is completed" : "录入完成后不允许修改采集人"}>
+            <Input className="video-editor-input" placeholder={recorder} disabled={true}/>
+          </Tooltip>
+          :
+          <Input className="video-editor-input" placeholder={recorder}
                onChange={(e) => updateVideoProp('recorder', e.target.value)}/>
+        }
       </Descriptions.Item>
       <Descriptions.Item label={displayEnglish ? "End Time" : "结束时间"} span={2}>
         <Tooltip title={tip}>
@@ -36,8 +43,14 @@ class VideoPropEditorModal extends Component {
         </Tooltip>
       </Descriptions.Item>
       <Descriptions.Item label={displayEnglish ? "Reviewer" : "审核人"} span={1}>
-        <Input className="video-editor-input" placeholder={reviewer}
+        {status === 4 || status < 2 ?
+          <Tooltip title={displayEnglish ? "This item can only be modified during reviewing" : "只有审核阶段可以修改此项"}>
+            <Input className="video-editor-input" placeholder={reviewer} disabled={true}/>
+          </Tooltip>
+          :
+          <Input className="video-editor-input" placeholder={reviewer}
                onChange={(e) => updateVideoProp('reviewer', e.target.value)}/>
+        }
       </Descriptions.Item>
       <Descriptions.Item label={displayEnglish ? "Video Type" : "视频类型"} span={2}>
         <Radio.Group
@@ -66,7 +79,32 @@ class VideoPropEditorModal extends Component {
           current={status}
           size="small"
           className="video-editor-status"
-          onChange={(current) => {
+          onChange={status === 4 ? null : (current) => {
+            if (current < status && (status === 2 || status === 4)) {
+              notification.error({
+                message: displayEnglish ? "Changing the status backward is not allowed." : "不允许后退视频状态",
+                description: displayEnglish ? "Please wait for the review. If you really need to go back, please contact administrator." : "请等待检查. 如确实需要后退请与管理员联系."
+              })
+              return
+            }
+            if (current - status > 1) {
+              notification.error({
+                message: displayEnglish ? "Skipping status is not allowed." : "不允许跳过状态"
+              })
+              return
+            }
+            if (current === 2 && !videoProps.recorder) {
+              notification.error({
+                message: displayEnglish ? "Please enter valid recorder person information" : "请输入有效的采集人信息"
+              })
+              return
+            }
+            if (current === 4 && !videoProps.reviewer) {
+              notification.error({
+                message: displayEnglish ? "Please enter valid reviewer person information" : "请输入有效的审核人信息"
+              })
+              return
+            }
             updateVideoProp('status', current)
           }}
           status={status === 4 ? "finish" : "process"}
