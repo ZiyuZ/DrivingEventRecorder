@@ -43,18 +43,18 @@ export default class GlobalStore {
         pageUrl: "/recorder/video_based",
         icon: "video-camera"
       },
-      {
-        id: 2,
-        pageTitle: pageTitles[2],
-        pageUrl: "/recorder/real_time",
-        icon: "dashboard"
-      },
-      {
-        id: 3,
-        pageTitle: pageTitles[3],
-        pageUrl: "/recorder/rating",
-        icon: "team"
-      },
+      // {
+      //   id: 2,
+      //   pageTitle: pageTitles[2],
+      //   pageUrl: "/recorder/real_time",
+      //   icon: "dashboard"
+      // },
+      // {
+      //   id: 3,
+      //   pageTitle: pageTitles[3],
+      //   pageUrl: "/recorder/rating",
+      //   icon: "team"
+      // },
       {
         id: 4,
         pageTitle: pageTitles[4],

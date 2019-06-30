@@ -3,6 +3,7 @@ import {notification} from 'antd';
 import Axios from "../utils/axios"
 import backendConfig from "../config/backendConfig";
 import moment from "moment";
+import {Base64} from 'js-base64';
 
 configure({enforceActions: "always"});
 
@@ -17,6 +18,7 @@ export default class VideoBasedRecorderStore {
   @observable videoList = null;
   @observable videoPropEditorModalVisible = false;
   @observable videoFilterModalVisible = false;
+  @observable videoPropVerificationModalVisible = false;
 
   @action updateVideoFilterDate = (date) => {
     this.videoFilterDate = date;
@@ -87,18 +89,7 @@ export default class VideoBasedRecorderStore {
     }
   }
 
-  @action updatePlaybackRate = value => {
-    const playbackRate = parseFloat(value);
-    if (isNaN(playbackRate) || playbackRate < 0.1 || playbackRate > 5.0) {
-      notification.error({
-        message: "Value Error",
-        description: `Invalid playback rate : ${value}. It should be a number between 0.1 and 5.0.`
-      });
-      this.playerProps.playbackRate = 1.0;
-    } else {
-      this.playerProps.playbackRate = playbackRate;
-    }
-  };
+  @observable permissionVerificationInformation = {ID: '', token: ''};
 
   @action switchPlaying = value => {
     this.playerProps.playing = value === undefined ? !this.playerProps.playing : value;
@@ -186,7 +177,6 @@ export default class VideoBasedRecorderStore {
       console.error("Error: " + JSON.stringify(err))
     },
     onSeek: (playbackTime) => {
-      console.log('seek', playbackTime)
       this.updateVideoProp('playbackTime', playbackTime);
     }
   };
@@ -255,6 +245,31 @@ export default class VideoBasedRecorderStore {
     this.videoFilterModalVisible = !this.videoFilterModalVisible;
   };
 
+  @computed get OYX() {
+    const {ID, token} = this.permissionVerificationInformation;
+    return ID && Base64.encode(ID) === token;
+  }
+
+  @action updatePlaybackRate = value => {
+    const playbackRate = parseFloat(value);
+    if (isNaN(playbackRate) || playbackRate < 0.5 || playbackRate > 2.5) {
+      notification.error({
+        message: "Value Error",
+        description: `Invalid playback rate : ${value}. It should be a number between 0.5 and 2.5.`
+      });
+      this.playerProps.playbackRate = 1.0;
+    } else {
+      this.playerProps.playbackRate = playbackRate;
+    }
+  };
+
+  @action switchVideoPropVerificationModalVisible = () => {
+    this.videoPropVerificationModalVisible = !this.videoPropVerificationModalVisible;
+  };
+
+  @action setPropUpdateVerifyField = (k, v) => {
+    this.permissionVerificationInformation[k] = v;
+  };
 
   @action putVideoProp = () => {
     const {id, file_name, path, begin_time, end_time, type, video_gps_time_diff, status, recorder, reviewer} = this.videoProps;

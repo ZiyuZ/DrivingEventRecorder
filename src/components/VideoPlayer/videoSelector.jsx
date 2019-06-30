@@ -75,7 +75,7 @@ class VideoSelector extends Component {
         <Tooltip title={displayEnglish ? "Filter videos by time" : "根据时间过滤视频"}>
           <Button
             icon="calendar"
-            type="primary"
+            type={videoList ? "" : "primary"}
             onClick={switchVideoFilterModalVisible}
             disabled={videoProps.isFrozen}
           />

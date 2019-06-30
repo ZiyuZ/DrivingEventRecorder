@@ -10,7 +10,8 @@ export default class StagingArea extends Component {
   thisStore = this.props.store.EventRecorder;
 
   renderActions = (index, time) => {
-    const {handleSubmit, deleteElementFromStaging} = this.thisStore;
+    const {handleSubmit, deleteElementFromStaging, rootStore} = this.thisStore;
+    const {displayEnglish} = rootStore.GlobalStore;
     return [
       time,
       <Button
@@ -21,7 +22,7 @@ export default class StagingArea extends Component {
       />,
       <Popconfirm
         placement="top"
-        title="Discard recorded event?"
+        title={displayEnglish ? "Abandon the event?" : "放弃该事件?"}
         onConfirm={() => deleteElementFromStaging(index)}
         okText="Yes"
         cancelText="No"
@@ -53,7 +54,6 @@ export default class StagingArea extends Component {
   };
 
   renderEventItem = (item, index) => {
-    const descIndex = this.thisStore.rootStore.GlobalStore.displayEnglish ? 1 : 0;
     return (
       <List.Item
         actions={this.renderActions(index, moment(item.start_time).format('YYYY-MM-DD HH:mm:ss'))}
@@ -67,7 +67,7 @@ export default class StagingArea extends Component {
               twoToneColor="#52c41a"
               className="description-icon"
             />
-            {item.desc[descIndex]}
+            {item.desc}
           </Tooltip>
         ) : null}
       </List.Item>

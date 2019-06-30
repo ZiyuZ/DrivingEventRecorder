@@ -51,7 +51,7 @@ export default class EventDataViewStore {
       stopTime: utils.parseTime(stop_time, false, true),
       eventName: thisEventDefinition.desc[descIndex],
       optionCode: eventCodeList.join(", "),
-      desc: desc[descIndex]
+      desc: desc
     };
   };
 
