@@ -1,6 +1,6 @@
 export default {
   backend: `http://${process.env.NODE_ENV === 'development' ?
-    window.location.hostname + ":10500" : window.location.host}`,
+    "10.201.197.147" + ":10500" : window.location.host}`,
   dataStorageApi: "/data",
   cnipApi: "/api/cnip",
   lnipApi: "/api/lnip",

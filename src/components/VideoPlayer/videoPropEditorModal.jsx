@@ -9,7 +9,8 @@ class VideoPropEditorModal extends Component {
   thisStore = this.props.store.VideoBasedRecorder;
 
   handleStepChange = (current) => {
-    const {videoProps, updateVideoProp, rootStore, switchVideoPropVerificationModalVisible, switchVideoPropEditorModalVisible, OYX} = this.thisStore;
+    const {videoProps, updateVideoProp, rootStore, switchVideoPropVerificationModalVisible, switchVideoPropEditorModalVisible, OYX, permissionVerificationInformation} = this.thisStore;
+    const {ID: reviewerName} = permissionVerificationInformation;
     const {displayEnglish} = rootStore.GlobalStore;
     const {status} = videoProps;
     if (current < status && (status === 2 || status === 4)) {
@@ -30,6 +31,9 @@ class VideoPropEditorModal extends Component {
         message: displayEnglish ? "Please enter valid recorder person information" : "请输入有效的采集人信息"
       });
       return
+    }
+    if (current === 3) {
+      updateVideoProp('reviewer', reviewerName);
     }
     if (current === 4 && !videoProps.reviewer) {
       notification.error({
